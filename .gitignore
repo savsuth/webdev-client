@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Claude Code instruction/tooling files — never commit or deploy these
+CLAUDE.md
+AGENTS.md
+.impeccable/
+.claude/
