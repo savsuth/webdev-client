@@ -17,6 +17,7 @@ export default function Signin() {
         defaultValue="123"
       />{" "}
       <br />
+      {/* A Link stands in for the submit button until real authentication exists. */}
       <Link href="/dashboard" id="wd-signin-btn">
         Sign in
       </Link>{" "}

@@ -5,6 +5,7 @@ export default async function Assignments({
 }: {
   params: Promise<{ cid: string }>;
 }) {
+  // Need cid from the route to link each assignment to the right course.
   const { cid } = await params;
   return (
     <div id="wd-assignments">

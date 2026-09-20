@@ -1,3 +1,5 @@
+// Reuse the Modules route's component so Home shows the same module list
+// without duplicating its markup.
 import Modules from "../modules/page";
 import CourseStatus from "./Status";
 

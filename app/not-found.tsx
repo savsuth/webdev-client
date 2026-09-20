@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+// Next.js renders this automatically for any unmatched route, such as
+// /calendar and /inbox before those pages exist.
 export default function NotFound() {
   return (
     <div id="wd-not-found">

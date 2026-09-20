@@ -17,6 +17,7 @@ export default function YourForm() {
         defaultValue="Suthar"
       />
       <br />
+      {/* Masked as a password field so the student ID isn't shown in plain text on screen. */}
       <label htmlFor="wd-your-student-id">Student ID:</label>
       <input
         type="password"

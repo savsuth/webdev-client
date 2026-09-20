@@ -6,6 +6,8 @@ export default async function AssignmentEditor({
   params: Promise<{ cid: string }>;
 }) {
   const { cid } = await params;
+  // Every assignment opens the same editor content for now; a later chapter
+  // will load details for the specific aid.
   return (
     <div id="wd-assignments-editor">
       <label htmlFor="wd-name">Assignment Name</label>

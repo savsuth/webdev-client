@@ -2,6 +2,7 @@ export default function CourseStatus() {
   return (
     <div id="wd-course-status">
       <h2>Course Status</h2>
+      {/* Buttons are static for this chapter; later chapters wire up real actions. */}
       <button>Unpublish</button> <button>Publish</button>
       <br />
       <br />

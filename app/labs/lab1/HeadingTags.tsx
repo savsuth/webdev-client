@@ -2,6 +2,7 @@ export default function HeadingTags() {
   return (
     <div id="wd-h-tag">
       <h4>Heading Tags</h4>
+      {/* Literal h1-h6 samples, in addition to the descriptive text below, per the assignment checklist. */}
       <h1>Heading 1</h1>
       <h2>Heading 2</h2>
       <h3>Heading 3</h3>

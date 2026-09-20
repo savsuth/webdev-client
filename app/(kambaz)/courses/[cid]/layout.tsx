@@ -8,6 +8,7 @@ export default async function CoursesLayout({
   children: ReactNode;
   params: Promise<{ cid: string }>;
 }>) {
+  // Dynamic route segments arrive as a Promise in this App Router version.
   const { cid } = await params;
   return (
     <div id="wd-courses">

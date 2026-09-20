@@ -4,6 +4,7 @@ import Lesson from "./Lesson";
 export default function Modules() {
   return (
     <div>
+      {/* Toolbar is static for this chapter; later chapters wire up real interactivity. */}
       <button>Collapse All</button> <button>View Progress</button>{" "}
       <select defaultValue="publish-all">
         <option value="publish-all">Publish All</option>
