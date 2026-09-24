@@ -22,7 +22,7 @@ export default function TOC() {
           Kambaz
         </Link>
       </li>
-      <li>Aasav Suthar</li>
+      <li>Aasav Alpeshbhai Suthar</li>
       <li>
         <a
           href="https://webdev-client.vercel.app/book/ch1"
