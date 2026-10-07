@@ -1,0 +1,3 @@
+/* Utilities + theme only — safe without the Preflight reset that would restyle plain HTML defaults */
+@import "tailwindcss/theme" layer(theme);
+@import "tailwindcss/utilities" layer(utilities);

@@ -1,0 +1,104 @@
+.wd-media-queries-demo {
+  background-color: green;
+  color: white;
+  padding: 1rem;
+}
+
+.wd-media-queries-demo li {
+  opacity: 0.55;
+  font-weight: normal;
+  text-decoration: none;
+}
+
+.wd-media-queries-demo li.wd-mq-rule-default {
+  opacity: 1;
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+@media (max-width: 749px) {
+  .wd-media-queries-demo {
+    background-color: purple;
+    color: white;
+  }
+  .wd-media-queries-demo li.wd-mq-rule-default {
+    opacity: 0.55;
+    font-weight: normal;
+    text-decoration: none;
+  }
+  .wd-media-queries-demo li.wd-mq-rule-ai {
+    opacity: 1;
+    font-weight: bold;
+    text-decoration: underline;
+  }
+}
+
+@media (min-width: 750px) and (max-width: 1000px) {
+  .wd-media-queries-demo {
+    background-color: yellow;
+    color: black;
+  }
+  /* Same specificity as the default highlight — must clear it here */
+  .wd-media-queries-demo li.wd-mq-rule-default {
+    opacity: 0.55;
+    font-weight: normal;
+    text-decoration: none;
+  }
+  .wd-media-queries-demo li.wd-mq-rule-750 {
+    opacity: 1;
+    font-weight: bold;
+    text-decoration: underline;
+  }
+}
+
+@media (min-width: 1000px) and (max-width: 1250px) {
+  .wd-media-queries-demo {
+    background-color: blue;
+    color: white;
+  }
+  .wd-media-queries-demo li.wd-mq-rule-default {
+    opacity: 0.55;
+    font-weight: normal;
+    text-decoration: none;
+  }
+  .wd-media-queries-demo li.wd-mq-rule-1000 {
+    opacity: 1;
+    font-weight: bold;
+    text-decoration: underline;
+  }
+}
+
+@media (min-width: 1250px) {
+  .wd-media-queries-demo {
+    background-color: red;
+    color: white;
+  }
+  .wd-media-queries-demo li.wd-mq-rule-default {
+    opacity: 0.55;
+    font-weight: normal;
+    text-decoration: none;
+  }
+  .wd-media-queries-demo li.wd-mq-rule-1250 {
+    opacity: 1;
+    font-weight: bold;
+    text-decoration: underline;
+  }
+}
+
+/* Declared after the 1250px block so it overrides it above 1500px */
+@media (min-width: 1500px) {
+  .wd-media-queries-demo {
+    background-color: black;
+    color: white;
+  }
+  .wd-media-queries-demo li.wd-mq-rule-1250 {
+    opacity: 0.55;
+    font-weight: normal;
+    text-decoration: none;
+  }
+  .wd-media-queries-demo li.wd-mq-rule-your-1500 {
+    opacity: 1;
+    font-weight: bold;
+    text-decoration: underline;
+  }
+}

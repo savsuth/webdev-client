@@ -25,7 +25,7 @@ export default function TOC() {
       <li>Aasav Alpeshbhai Suthar</li>
       <li>
         <a
-          href="https://webdev-client.vercel.app/book/ch1"
+          href="https://kambaz.dev/book/ch1"
           id="wd-toc-book-link"
           target="_blank"
           rel="noreferrer"
