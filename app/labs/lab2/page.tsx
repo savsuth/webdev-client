@@ -1,5 +1,4 @@
 import "./index.css";
-import Link from "next/link";
 import ForegroundColors from "./ForegroundColors";
 import BackgroundColors from "./BackgroundColors";
 import Borders from "./Borders";
@@ -148,13 +147,10 @@ export default function Lab2() {
       <MediaQueriesDemo />
       <ReactIconsSampler />
 
-      {/* The Tailwind samples live on their own route so their utilities load only for that page. */}
-      <div id="wd-lab2-tailwind">
-        <h3>Tailwind CSS</h3>
-        <Link href="/labs/lab2/tailwind" id="wd-lab2-tailwind-link">
-          Open the Tailwind CSS samples
-        </Link>
-      </div>
+      {/* A plain anchor forces a full page load, so the Tailwind lab's Preflight reset does not leak back into this page. */}
+      <p>
+        <a href="/labs/lab2/tailwind">Open Tailwind CSS lab →</a>
+      </p>
     </div>
   );
 }
