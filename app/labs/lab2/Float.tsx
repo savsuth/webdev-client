@@ -41,8 +41,11 @@ export default function Float() {
         {LOREM} {LOREM}
         <div className="wd-float-done" />
       </div>
-      <div id="wd-ai-float">
-        <div className="wd-float-right wd-dimension-square wd-bg-color-gray">
+      <div>
+        <div
+          id="wd-ai-float"
+          className="wd-float-right wd-dimension-square wd-bg-color-gray"
+        >
           AI
         </div>
         <p>{LOREM}</p>

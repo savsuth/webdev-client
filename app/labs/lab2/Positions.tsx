@@ -72,7 +72,7 @@ export default function Positions() {
         >
           Fixed badge
         </div>
-        <div id="wd-ai-fixed" className="wd-ai-pos-fixed wd-bg-color-red">
+        <div id="wd-ai-fixed" className="wd-ai-pos-fixed wd-bg-color-red wd-fg-color-white">
           AI fixed
         </div>
       </div>
