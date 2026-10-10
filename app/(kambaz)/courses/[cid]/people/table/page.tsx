@@ -14,7 +14,7 @@ export default function PeopleTable() {
             <th className="p-2">Total Activity</th>
           </tr>
         </thead>
-        {/* Rows are hard-coded for now; a later chapter renders the roster from data. */}
+        {/* Rows are hard-coded */}
         <tbody>
           <tr className="odd:bg-neutral-50">
             <td className="p-2 text-nowrap">

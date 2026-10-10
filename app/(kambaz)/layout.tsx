@@ -9,7 +9,9 @@ export default function KambazLayout({
   return (
     <div id="wd-kambaz" className="font-sans">
       <KambazNavigation />
-      <div className="wd-main-content-offset p-3">{children}</div>
+      <div className="wd-main-content-offset p-3">
+        {children}
+        </div>
     </div>
   );
 }

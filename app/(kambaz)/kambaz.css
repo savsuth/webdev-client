@@ -47,7 +47,7 @@
   white-space: nowrap;
 }
 
-/* !important keeps the active border even though each link also carries the border-0 utility */
+/* important keeps the active border even though each link also carries the border-0 utility */
 .list-group.wd > .list-group-item.active {
   color: black;
   background-color: white;

@@ -3,7 +3,9 @@ import Link from "next/link";
 export default function Signup() {
   return (
     <div id="wd-signup-screen" className="max-w-sm">
-      <h1 className="mb-3 text-2xl font-semibold">Sign up</h1>
+      <h1 className="mb-3 text-2xl font-semibold">
+        Sign up
+        </h1>
       <input
         placeholder="username"
         defaultValue="ada"

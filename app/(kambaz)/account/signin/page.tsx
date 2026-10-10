@@ -3,7 +3,9 @@ import Link from "next/link";
 export default function Signin() {
   return (
     <div id="wd-signin-screen" className="max-w-sm">
-      <h1 className="mb-3 text-2xl font-semibold">Sign in</h1>
+      <h1 className="mb-3 text-2xl font-semibold">
+        Sign in
+        </h1>
       <input
         id="wd-username"
         placeholder="username"
@@ -25,7 +27,7 @@ export default function Signin() {
         placeholder="sample note"
         className="mb-2 w-full rounded border border-neutral-300 px-3 py-2"
       />
-      {/* A Link stands in for the submit button until real authentication exists; it keeps the A1 target of /dashboard. */}
+      {/* A Link stands in for the submit button until real authentication exists */}
       <Link
         id="wd-signin-btn"
         href="/dashboard"
