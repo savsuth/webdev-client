@@ -10,7 +10,7 @@ export default function Modules() {
   const modules = db.modules.filter((module) => module.course === cid);
   return (
     <div>
-      {/* Toolbar is static for this chapter; later chapters wire up real interactivity. */}
+      {/* The toolbar controls are placeholders and remain inactive until event handling is introduced. */}
       <div className="mb-3 flex flex-wrap items-center gap-2">
         <button
           type="button"

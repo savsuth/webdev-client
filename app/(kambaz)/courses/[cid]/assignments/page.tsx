@@ -7,14 +7,14 @@ export default async function Assignments({
 }: {
   params: Promise<{ cid: string }>;
 }) {
-  // Need cid from the route to link each assignment to the right course.
+  // Use the course identifier from the route to select and link this course's assignments.
   const { cid } = await params;
   const assignments = db.assignments.filter(
     (assignment) => assignment.course === cid,
   );
   return (
     <div id="wd-assignments">
-      {/* The search field and buttons are static until a later chapter adds behavior. */}
+      {/* The search field and buttons are placeholders and remain inactive until event handling is introduced. */}
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <div className="relative">
           <FaSearch className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-neutral-500" />
