@@ -3,6 +3,18 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import "../../kambaz.css";
 
+const LINKS = [
+  { segment: "home", id: "wd-course-home-link", label: "Home" },
+  { segment: "modules", id: "wd-course-modules-link", label: "Modules" },
+  { segment: "piazza", id: "wd-course-piazza-link", label: "Piazza" },
+  { segment: "zoom", id: "wd-course-zoom-link", label: "Zoom" },
+  { segment: "assignments", id: "wd-course-assignments-link", label: "Assignments" },
+  { segment: "quizzes", id: "wd-course-quizzes-link", label: "Quizzes" },
+  { segment: "grades", id: "wd-course-grades-link", label: "Grades" },
+  { segment: "people/table", id: "wd-course-people-link", label: "People" },
+  { segment: "announcements", id: "wd-course-announcements-link", label: "Announcements" },
+] as const;
+
 export default function CourseNavigation({ cid }: { cid: string }) {
   const pathname = usePathname() ?? "";
   // Nested paths count as active too, so an assignment's editor still highlights Assignments.
@@ -10,46 +22,18 @@ export default function CourseNavigation({ cid }: { cid: string }) {
     pathname === href || pathname.startsWith(href + "/")
       ? "list-group-item active border-0"
       : "list-group-item border-0 text-red-600";
-  const home = `/courses/${cid}/home`;
-  const modules = `/courses/${cid}/modules`;
-  const piazza = `/courses/${cid}/piazza`;
-  const zoom = `/courses/${cid}/zoom`;
-  const assignments = `/courses/${cid}/assignments`;
-  const quizzes = `/courses/${cid}/quizzes`;
-  const grades = `/courses/${cid}/grades`;
-  const people = `/courses/${cid}/people/table`;
   return (
     <div id="wd-courses-navigation" className="wd list-group rounded-none text-lg">
-      <Link href={home} id="wd-course-home-link" className={linkClass(home)}>
-        Home
-      </Link>
-      <Link href={modules} id="wd-course-modules-link" className={linkClass(modules)}>
-        Modules
-      </Link>
-      <Link href={piazza} id="wd-course-piazza-link" className={linkClass(piazza)}>
-        Piazza
-      </Link>
-      <Link href={zoom} id="wd-course-zoom-link" className={linkClass(zoom)}>
-        Zoom
-      </Link>
+      {LINKS.map(({ segment, id, label }) => {
+        const href = `/courses/${cid}/${segment}`;
+        return (
+          <Link key={id} href={href} id={id} className={linkClass(href)}>
+            {label}
+          </Link>
+        );
+      })}
       <Link
-        href={assignments}
-        id="wd-course-assignments-link"
-        className={linkClass(assignments)}
-      >
-        Assignments
-      </Link>
-      <Link href={quizzes} id="wd-course-quizzes-link" className={linkClass(quizzes)}>
-        Quizzes
-      </Link>
-      <Link href={grades} id="wd-course-grades-link" className={linkClass(grades)}>
-        Grades
-      </Link>
-      <Link href={people} id="wd-course-people-link" className={linkClass(people)}>
-        People
-      </Link>
-      <Link
-        href={home}
+        href={`/courses/${cid}/home`}
         id="wd-course-ai-link"
         className="list-group-item border-0 text-red-600"
       >

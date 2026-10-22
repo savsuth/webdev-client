@@ -2,20 +2,20 @@ import Link from "next/link";
 import Image from "next/image";
 
 export default function CourseCard({
-  id,
-  title,
-  subtitle,
+  _id,
+  name,
+  description,
   image,
 }: {
-  id: string;
-  title: string;
-  subtitle: string;
+  _id: string;
+  name: string;
+  description: string;
   image: string;
 }) {
   return (
     <div className="wd-dashboard-course w-[300px] max-w-full overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-sm">
       <Link
-        href={`/courses/${id}/home`}
+        href={`/courses/${_id}/home`}
         className="wd-dashboard-course-link block text-neutral-900 no-underline"
       >
         {/* next/image optimizes these local thumbnails; Lab 1 uses plain <img> on purpose to show the raw HTML tag. */}
@@ -23,16 +23,16 @@ export default function CourseCard({
           src={image}
           width={300}
           height={160}
-          alt={title}
+          alt={name}
           className="h-40 w-full object-cover"
         />
         <div className="p-4">
-          <h5 className="m-0 mb-2 truncate text-lg font-semibold whitespace-nowrap">
-            {title}
+          <h5 className="wd-dashboard-course-title m-0 mb-2 truncate text-lg font-semibold whitespace-nowrap">
+            {name}
           </h5>
-          {/* A fixed subtitle height keeps every card the same height regardless of subtitle length. */}
-          <p className="wd-dashboard-course-title m-0 mb-3 h-[100px] overflow-hidden text-sm text-neutral-600">
-            {subtitle}
+          {/* A fixed description height keeps every card the same height regardless of description length. */}
+          <p className="wd-dashboard-course-description m-0 mb-3 h-[100px] overflow-hidden text-sm text-neutral-600">
+            {description}
           </p>
           <button
             type="button"

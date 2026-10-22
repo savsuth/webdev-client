@@ -11,9 +11,20 @@ import { usePathname } from "next/navigation";
 const ACTIVE = "block bg-white py-3 text-center text-sm text-red-600 no-underline";
 const IDLE = "block bg-black py-3 text-center text-sm text-white no-underline";
 
+const LINKS = [
+  { label: "Dashboard", path: "/dashboard", icon: AiOutlineDashboard },
+  { label: "Courses", path: "/dashboard", icon: LiaBookSolid },
+  { label: "Calendar", path: "/calendar", icon: IoCalendarOutline },
+  { label: "Inbox", path: "/inbox", icon: FaInbox },
+  { label: "Labs", path: "/labs", icon: LiaCogSolid },
+  { label: "History", path: "/history", icon: IoCalendarOutline },
+  { label: "Help", path: "/labs", icon: FaCircleQuestion },
+] as const;
+
 export default function KambazNavigation() {
   // The current route decides which tile gets the white active highlight.
   const pathname = usePathname() ?? "";
+  const accountActive = pathname.includes("/account");
   return (
     // Fixed to the window and hidden below md; kambaz.css offsets the page content by the same 120px.
     <nav
@@ -36,11 +47,11 @@ export default function KambazNavigation() {
       <Link
         href="/account"
         id="wd-account-link"
-        className={pathname.startsWith("/account") ? ACTIVE : IDLE}
+        className={accountActive ? ACTIVE : IDLE}
       >
         <FaRegCircleUser
           className={
-            pathname.startsWith("/account")
+            accountActive
               ? "inline-block text-3xl text-red-600"
               : "inline-block text-3xl text-white"
           }
@@ -48,52 +59,26 @@ export default function KambazNavigation() {
         <br />
         Account
       </Link>
-      <Link
-        href="/dashboard"
-        id="wd-dashboard-link"
-        className={pathname === "/dashboard" ? ACTIVE : IDLE}
-      >
-        <AiOutlineDashboard className="inline-block text-3xl text-red-600" />
-        <br />
-        Dashboard
-      </Link>
-      <Link
-        href="/dashboard"
-        id="wd-course-link"
-        className={pathname.startsWith("/courses") ? ACTIVE : IDLE}
-      >
-        <LiaBookSolid className="inline-block text-3xl text-red-600" />
-        <br />
-        Courses
-      </Link>
-      <Link
-        href="/calendar"
-        id="wd-calendar-link"
-        className={pathname.startsWith("/calendar") ? ACTIVE : IDLE}
-      >
-        <IoCalendarOutline className="inline-block text-3xl text-red-600" />
-        <br />
-        Calendar
-      </Link>
-      <Link
-        href="/inbox"
-        id="wd-inbox-link"
-        className={pathname.startsWith("/inbox") ? ACTIVE : IDLE}
-      >
-        <FaInbox className="inline-block text-3xl text-red-600" />
-        <br />
-        Inbox
-      </Link>
-      <Link href="/labs" id="wd-labs-link" className={IDLE}>
-        <LiaCogSolid className="inline-block text-3xl text-red-600" />
-        <br />
-        Labs
-      </Link>
-      <Link href="/labs" id="wd-ai-nav-help" className={IDLE}>
-        <FaCircleQuestion className="inline-block text-3xl text-red-600" />
-        <br />
-        Help
-      </Link>
+      {LINKS.map((link) => {
+        // Courses shares the dashboard path, so it is active only while a course is open.
+        const active =
+          link.label === "Courses"
+            ? pathname.includes("/courses")
+            : pathname.includes(link.path);
+        const Icon = link.icon;
+        return (
+          <Link
+            key={link.label}
+            href={link.path}
+            id={`wd-${link.label.toLowerCase()}-link`}
+            className={active ? ACTIVE : IDLE}
+          >
+            <Icon className="inline-block text-3xl text-red-600" />
+            <br />
+            {link.label}
+          </Link>
+        );
+      })}
     </nav>
   );
 }
