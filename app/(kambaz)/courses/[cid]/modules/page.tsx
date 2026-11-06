@@ -1,49 +1,22 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import Lesson from "./Lesson";
 import Module from "./Module";
-import * as db from "../../../database";
+import ModulesControls from "./ModulesControls";
+import { useModulesStore } from "../../../store/modulesStore";
 
 export default function Modules() {
   const { cid } = useParams();
-  const modules = db.modules.filter((module) => module.course === cid);
+  // Home renders this same component, so both screens read the one modules array in the store.
+  const modules = useModulesStore((state) => state.modules).filter(
+    (module) => module.course === cid,
+  );
   return (
     <div>
-      {/* The toolbar controls are placeholders and remain inactive until event handling is introduced. */}
-      <div className="mb-3 flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          className="rounded border border-neutral-300 bg-white px-3 py-1.5 text-sm"
-        >
-          Collapse All
-        </button>
-        <button
-          type="button"
-          className="rounded border border-neutral-300 bg-white px-3 py-1.5 text-sm"
-        >
-          View Progress
-        </button>
-        <select
-          defaultValue="publish-all"
-          className="rounded border border-neutral-300 bg-white px-3 py-1.5 text-sm"
-        >
-          <option value="publish-all">Publish All</option>
-        </select>
-        <button
-          type="button"
-          className="rounded border border-red-600 bg-red-600 px-3 py-1.5 text-sm font-medium text-white"
-        >
-          + Module
-        </button>
-      </div>
+      <ModulesControls />
       <ul id="wd-modules" className="m-0 list-none p-0">
         {modules.map((module) => (
-          <Module key={module._id} title={module.name}>
-            {module.lessons?.map((lesson) => (
-              <Lesson key={lesson._id} title={lesson.name} />
-            ))}
-          </Module>
+          <Module key={module._id} module={module} />
         ))}
       </ul>
     </div>
