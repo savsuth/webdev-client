@@ -21,7 +21,9 @@ export default function Labs() {
           </Link>
         </li>
         <li>
-          <Link href="/labs/lab5">Lab 5</Link>
+          <Link href="/labs/lab5" id="wd-lab5-link">
+            Lab 5: RESTful Web APIs
+          </Link>
         </li>
         <li>
           <a
@@ -31,6 +33,27 @@ export default function Labs() {
             rel="noreferrer"
           >
             GitHub Repository
+          </a>
+        </li>
+        <li>
+          <a
+            href="https://github.com/savsuth/webdev-server"
+            id="wd-github-server"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Server GitHub Repository
+          </a>
+        </li>
+        <li>
+          {/* The server root comes from the environment, so the link follows the deployed server. */}
+          <a
+            href={process.env.NEXT_PUBLIC_HTTP_SERVER}
+            id="wd-server"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Server on Render
           </a>
         </li>
         <li>

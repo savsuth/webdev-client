@@ -1,26 +1,22 @@
 import Link from "next/link";
 import Image from "next/image";
-import { useCoursesStore, type Course } from "../store/coursesStore";
-import { useEnrollmentsStore } from "../store/enrollmentsStore";
+import type { Course } from "../courses/client";
 import { useAccountContext } from "../account/AccountContext";
 
 export default function CourseCard({
   course,
   onEdit,
+  onDelete,
+  enrolled,
+  onToggleEnrollment,
 }: {
   course: Course;
   onEdit: () => void;
+  onDelete: () => void;
+  enrolled: boolean;
+  onToggleEnrollment: () => void;
 }) {
-  const deleteCourse = useCoursesStore((state) => state.deleteCourse);
   const { currentUser } = useAccountContext();
-  const enrollments = useEnrollmentsStore((state) => state.enrollments);
-  const enroll = useEnrollmentsStore((state) => state.enroll);
-  const unenroll = useEnrollmentsStore((state) => state.unenroll);
-  const enrolled =
-    !!currentUser &&
-    enrollments.some(
-      (e) => e.user === currentUser._id && e.course === course._id,
-    );
   return (
     <div className="wd-dashboard-course w-[300px] max-w-full overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-sm">
       <Link
@@ -67,7 +63,7 @@ export default function CourseCard({
             className="ms-2 inline-flex items-center justify-center rounded bg-red-600 px-3 py-1.5 text-sm font-medium text-white"
             onClick={(event) => {
               event.preventDefault();
-              deleteCourse(course._id);
+              onDelete();
             }}
           >
             Delete
@@ -80,11 +76,7 @@ export default function CourseCard({
               }`}
               onClick={(event) => {
                 event.preventDefault();
-                if (enrolled) {
-                  unenroll(currentUser._id, course._id);
-                } else {
-                  enroll(currentUser._id, course._id);
-                }
+                onToggleEnrollment();
               }}
             >
               {enrolled ? "Unenroll" : "Enroll"}

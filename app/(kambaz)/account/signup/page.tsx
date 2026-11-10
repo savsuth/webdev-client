@@ -3,31 +3,26 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useAccountContext } from "../AccountContext";
+import * as client from "../client";
+import { emptyUser, useAccountContext } from "../AccountContext";
 
 export default function Signup() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const { setCurrentUser } = useAccountContext();
   const router = useRouter();
 
-  // The new user only lives in memory, so a reload forgets it until users are saved on a server.
-  const signup = () => {
+  // The server creates the user and signs them in; a taken username comes back as a 400.
+  const signup = async () => {
     if (!username || !password) return;
-    setCurrentUser({
-      _id: crypto.randomUUID(),
-      username,
-      password,
-      firstName: "",
-      lastName: "",
-      email: "",
-      role: "STUDENT",
-      loginId: "",
-      section: "",
-      lastActivity: "",
-      totalActivity: "",
-    });
-    router.push("/account/profile");
+    try {
+      const user = await client.signup({ ...emptyUser, username, password });
+      setCurrentUser(user);
+      router.push("/account/profile");
+    } catch {
+      setErrorMessage("Username already in use");
+    }
   };
 
   return (
@@ -53,6 +48,11 @@ export default function Signup() {
         type="password"
         className="wd-password-verify mb-2 w-full rounded border border-neutral-300 px-3 py-2"
       />
+      {errorMessage && (
+        <p id="wd-signup-error" className="mb-2 rounded bg-red-100 px-3 py-2 text-red-800">
+          {errorMessage}
+        </p>
+      )}
       <button
         type="button"
         onClick={signup}

@@ -1,13 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import {
-  emptyAssignment,
-  useAssignmentsStore,
-  type Assignment,
-} from "../../../../store/assignmentsStore";
+import * as client from "../client";
 
 // Shared class strings keep every label and field in the editor styled the same way.
 const LABEL = "mb-1 block font-medium";
@@ -17,24 +13,32 @@ export default function AssignmentEditor() {
   const params = useParams();
   const cid = String(params.cid);
   const aid = String(params.aid);
-  const assignments = useAssignmentsStore((state) => state.assignments);
-  const addAssignment = useAssignmentsStore((state) => state.addAssignment);
-  const updateAssignment = useAssignmentsStore((state) => state.updateAssignment);
   const router = useRouter();
-  // The editor works on a local draft: an existing assignment from the URL, or a blank one for this course.
-  const [assignment, setAssignment] = useState<Assignment>(
-    () =>
-      assignments.find((a) => a._id === aid && a.course === cid) ?? {
-        ...emptyAssignment,
-        course: cid,
-      },
-  );
-  const isNew = !assignments.some((a) => a._id === aid);
-  const save = () => {
+  // The editor works on a local draft: a blank assignment for this course until an existing one is retrieved.
+  const [assignment, setAssignment] = useState<client.Assignment>({
+    ...client.emptyAssignment,
+    course: cid,
+  });
+  const [isNew, setIsNew] = useState(true);
+  // Retrieve the course's assignments and edit the one named in the URL, if it exists.
+  useEffect(() => {
+    const fetchAssignment = async () => {
+      const assignments: client.Assignment[] =
+        await client.findAssignmentsForCourse(cid);
+      const found = assignments.find((a) => a._id === aid);
+      if (found) {
+        setAssignment(found);
+        setIsNew(false);
+      }
+    };
+    fetchAssignment();
+  }, [cid, aid]);
+  // Save on the server first, so the list is current when the Assignments screen loads.
+  const save = async () => {
     if (isNew) {
-      addAssignment(assignment);
+      await client.createAssignmentForCourse(cid, assignment);
     } else {
-      updateAssignment(assignment);
+      await client.updateAssignment(assignment);
     }
     router.push(`/courses/${cid}/assignments`);
   };

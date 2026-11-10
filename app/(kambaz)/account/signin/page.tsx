@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import * as db from "../../database";
+import * as client from "../client";
 import { useAccountContext } from "../AccountContext";
 
 export default function Signin() {
@@ -11,19 +11,19 @@ export default function Signin() {
     username: "",
     password: "",
   });
+  const [errorMessage, setErrorMessage] = useState("");
   const { setCurrentUser } = useAccountContext();
   const router = useRouter();
 
-  // Sign in only when a user matches both fields; otherwise stay on this screen.
-  const signin = () => {
-    const user = db.users.find(
-      (u) =>
-        u.username === credentials.username &&
-        u.password === credentials.password,
-    );
-    if (!user) return;
-    setCurrentUser(user);
-    router.push("/dashboard");
+  // The server rejects unknown credentials with a 401, so the screen stays and shows the reason.
+  const signin = async () => {
+    try {
+      const user = await client.signin(credentials);
+      setCurrentUser(user);
+      router.push("/dashboard");
+    } catch {
+      setErrorMessage("Unable to sign in. Check the username and password.");
+    }
   };
 
   return (
@@ -56,6 +56,11 @@ export default function Signin() {
         placeholder="sample note"
         className="mb-2 w-full rounded border border-neutral-300 px-3 py-2"
       />
+      {errorMessage && (
+        <p id="wd-signin-error" className="mb-2 rounded bg-red-100 px-3 py-2 text-red-800">
+          {errorMessage}
+        </p>
+      )}
       <button
         type="button"
         onClick={signin}

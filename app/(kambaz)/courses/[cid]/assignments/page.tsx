@@ -1,17 +1,26 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { FaPlus, FaSearch } from "react-icons/fa";
 import AssignmentItem from "./AssignmentItem";
-import { useAssignmentsStore } from "../../../store/assignmentsStore";
+import * as client from "./client";
 
 export default function Assignments() {
   // Use the course identifier from the route to select and link this course's assignments.
   const cid = String(useParams().cid);
-  const assignments = useAssignmentsStore((state) => state.assignments).filter(
-    (assignment) => assignment.course === cid,
-  );
+  const [assignments, setAssignments] = useState<client.Assignment[]>([]);
+  useEffect(() => {
+    const fetchAssignments = async () => {
+      setAssignments(await client.findAssignmentsForCourse(cid));
+    };
+    fetchAssignments();
+  }, [cid]);
+  const onDeleteAssignment = async (assignmentId: string) => {
+    await client.deleteAssignment(assignmentId);
+    setAssignments(assignments.filter((a) => a._id !== assignmentId));
+  };
   return (
     <div id="wd-assignments">
       {/* The search field and + Group remain placeholders; + Assignment opens the editor for a new row. */}
@@ -57,6 +66,7 @@ export default function Assignments() {
             cid={cid}
             aid={assignment._id}
             title={assignment.title}
+            onDelete={() => onDeleteAssignment(assignment._id)}
             details={`Multiple Modules | Not available until ${assignment.available} | Due ${assignment.due} | ${assignment.points} pts`}
           />
         ))}

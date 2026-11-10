@@ -1,34 +1,37 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { FaUserCircle } from "react-icons/fa";
-import * as db from "../../../../database";
+import * as coursesClient from "../../../client";
+import * as accountClient from "../../../../account/client";
 import { emptyUser, type User } from "../../../../account/AccountContext";
-import { useEnrollmentsStore } from "../../../../store/enrollmentsStore";
 
 const FIELD = "rounded border border-neutral-300 px-2 py-1";
 
 export default function PeopleTable() {
   const { cid } = useParams();
   const courseId = String(cid);
-  const enrollments = useEnrollmentsStore((state) => state.enrollments);
-  const enroll = useEnrollmentsStore((state) => state.enroll);
-  const unenroll = useEnrollmentsStore((state) => state.unenroll);
-  // People added here are kept on this screen only; their enrollment goes into the shared store.
-  const [users, setUsers] = useState<User[]>(db.users);
+  const [users, setUsers] = useState<User[]>([]);
   const [person, setPerson] = useState<User>(emptyUser);
-  const enrolled = users.filter((usr) =>
-    enrollments.some(
-      (enrollment) => enrollment.user === usr._id && enrollment.course === courseId,
-    ),
-  );
-  const addPerson = () => {
+  // Retrieve the users enrolled in this course from the server.
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setUsers(await coursesClient.findUsersForCourse(courseId));
+    };
+    fetchUsers();
+  }, [courseId]);
+  // Adding a person creates the user on the server, then enrolls that user in this course.
+  const addPerson = async () => {
     if (!person.firstName && !person.lastName) return;
-    const newUser = { ...person, _id: crypto.randomUUID() };
+    const newUser = await accountClient.createUser(person);
+    await coursesClient.enrollIntoCourse(newUser._id, courseId);
     setUsers([...users, newUser]);
-    enroll(newUser._id, courseId);
     setPerson(emptyUser);
+  };
+  const removePerson = async (userId: string) => {
+    await coursesClient.unenrollFromCourse(userId, courseId);
+    setUsers(users.filter((user) => user._id !== userId));
   };
   return (
     <div id="wd-people-table" className="overflow-x-auto">
@@ -80,7 +83,7 @@ export default function PeopleTable() {
         </thead>
         {/* Only users with an enrollment in the current course appear in the table. */}
         <tbody>
-          {enrolled.map((user) => (
+          {users.map((user) => (
             <tr key={user._id} className="odd:bg-neutral-50">
               <td className="wd-full-name p-2 text-nowrap">
                 <FaUserCircle className="me-2 inline align-middle text-4xl text-neutral-500" />
@@ -96,7 +99,7 @@ export default function PeopleTable() {
                 <button
                   type="button"
                   className="wd-people-unenroll rounded bg-neutral-200 px-2 py-0.5 text-xs"
-                  onClick={() => unenroll(user._id, courseId)}
+                  onClick={() => removePerson(user._id)}
                 >
                   Remove
                 </button>

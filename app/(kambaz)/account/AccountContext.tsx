@@ -1,11 +1,29 @@
 "use client";
 
-import { createContext, useContext, useState, type ReactNode } from "react";
-import usersJson from "../database/users.json";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
+import * as client from "./client";
 
-export type User = (typeof usersJson)[number];
+export type User = {
+  _id: string;
+  username: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: string;
+  loginId: string;
+  section: string;
+  lastActivity: string;
+  totalActivity: string;
+};
 
-// The shared blank draft the People table starts from when adding a person.
+// The shared blank draft that Sign up and the People table start from.
 export const emptyUser: User = {
   _id: "0",
   username: "",
@@ -29,6 +47,13 @@ const AccountContext = createContext<AccountContextValue | null>(null);
 
 export function AccountProvider({ children }: { children: ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  // Ask the server for the session user, so a browser reload keeps the user signed in.
+  useEffect(() => {
+    client
+      .profile()
+      .then(setCurrentUser)
+      .catch(() => setCurrentUser(null));
+  }, []);
   return (
     <AccountContext.Provider value={{ currentUser, setCurrentUser }}>
       {children}

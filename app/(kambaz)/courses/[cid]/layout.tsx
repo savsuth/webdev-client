@@ -5,8 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { FaAlignJustify } from "react-icons/fa6";
 import CourseNavigation from "./Navigation";
 import Breadcrumb from "./Breadcrumb";
-import { useCoursesStore } from "../../store/coursesStore";
-import { useEnrollmentsStore } from "../../store/enrollmentsStore";
+import * as client from "../client";
 import { useAccountContext } from "../../account/AccountContext";
 
 export default function CoursesLayout({
@@ -16,22 +15,22 @@ export default function CoursesLayout({
 }>) {
   const { cid } = useParams();
   const courseId = typeof cid === "string" ? cid : "";
-  // Read the course from the store so a course added on the Dashboard still has a name here.
-  const courses = useCoursesStore((state) => state.courses);
-  const course = courses.find((c) => c._id === courseId);
+  const [course, setCourse] = useState<client.Course>();
   const [showCourseNav, setShowCourseNav] = useState(true);
   const { currentUser } = useAccountContext();
-  const enrollments = useEnrollmentsStore((state) => state.enrollments);
   const router = useRouter();
   // A signed-in user may open only enrolled courses; signed-out visitors keep the prototype open.
-  const blocked =
-    !!currentUser &&
-    !enrollments.some((e) => e.user === currentUser._id && e.course === courseId);
   useEffect(() => {
-    if (blocked) router.push("/dashboard");
-  }, [blocked, router]);
-
-  if (blocked) return null;
+    const fetchCourse = async () => {
+      const courses: client.Course[] = currentUser
+        ? await client.findMyCourses()
+        : await client.fetchAllCourses();
+      const found = courses.find((c) => c._id === courseId);
+      setCourse(found);
+      if (currentUser && !found) router.push("/dashboard");
+    };
+    fetchCourse();
+  }, [currentUser, courseId, router]);
 
   return (
     <div id="wd-courses">
