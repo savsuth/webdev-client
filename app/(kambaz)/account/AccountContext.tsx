@@ -41,21 +41,25 @@ export const emptyUser: User = {
 type AccountContextValue = {
   currentUser: User | null;
   setCurrentUser: (user: User | null) => void;
+  loading: boolean;
 };
 
 const AccountContext = createContext<AccountContextValue | null>(null);
 
 export function AccountProvider({ children }: { children: ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  // True until the server has answered, so a screen does not send a signed-in user to Sign in too early.
+  const [loading, setLoading] = useState(true);
   // Ask the server for the session user, so a browser reload keeps the user signed in.
   useEffect(() => {
     client
       .profile()
       .then(setCurrentUser)
-      .catch(() => setCurrentUser(null));
+      .catch(() => setCurrentUser(null))
+      .finally(() => setLoading(false));
   }, []);
   return (
-    <AccountContext.Provider value={{ currentUser, setCurrentUser }}>
+    <AccountContext.Provider value={{ currentUser, setCurrentUser, loading }}>
       {children}
     </AccountContext.Provider>
   );

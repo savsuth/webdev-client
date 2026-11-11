@@ -78,17 +78,13 @@ export default function Profile() {
         onChange={(e) => setProfile({ ...profile, email: e.target.value })}
         className={FIELD}
       />
-      <select
+      {/* The role is chosen at sign up and is read-only here, so a student cannot become faculty. */}
+      <input
         id="wd-role"
         value={profile.role}
-        onChange={(e) => setProfile({ ...profile, role: e.target.value })}
-        className={FIELD}
-      >
-        <option value="USER">User</option>
-        <option value="ADMIN">Admin</option>
-        <option value="FACULTY">Faculty</option>
-        <option value="STUDENT">Student</option>
-      </select>
+        readOnly
+        className={`${FIELD} bg-neutral-100`}
+      />
       {/* Update saves the draft on the server, then the context, so Account and Dashboard see the edited user. */}
       <button
         type="button"

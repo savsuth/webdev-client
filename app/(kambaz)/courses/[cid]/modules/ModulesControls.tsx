@@ -1,10 +1,12 @@
 import ModuleEditor from "./ModuleEditor";
+import { useAccountContext } from "../../../account/AccountContext";
 
 export default function ModulesControls({
   addModule,
 }: {
   addModule: (name: string) => void;
 }) {
+  const { currentUser } = useAccountContext();
   return (
     <div id="wd-modules-controls" className="mb-3 flex flex-wrap items-center gap-2">
       <button
@@ -26,7 +28,8 @@ export default function ModulesControls({
         <option value="publish-all">Publish All</option>
         <option value="unpublish-all">Unpublish All</option>
       </select>
-      <ModuleEditor addModule={addModule} />
+      {/* Only faculty add modules. */}
+      {currentUser?.role === "FACULTY" && <ModuleEditor addModule={addModule} />}
     </div>
   );
 }

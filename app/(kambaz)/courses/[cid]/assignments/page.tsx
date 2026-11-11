@@ -6,8 +6,11 @@ import { useParams } from "next/navigation";
 import { FaPlus, FaSearch } from "react-icons/fa";
 import AssignmentItem from "./AssignmentItem";
 import * as client from "./client";
+import { useAccountContext } from "../../../account/AccountContext";
 
 export default function Assignments() {
+  const { currentUser } = useAccountContext();
+  const isFaculty = currentUser?.role === "FACULTY";
   // Use the course identifier from the route to select and link this course's assignments.
   const cid = String(useParams().cid);
   const [assignments, setAssignments] = useState<client.Assignment[]>([]);
@@ -33,22 +36,25 @@ export default function Assignments() {
             className="rounded border py-1.5 pr-3 pl-9 text-sm"
           />
         </div>
-        <div className="flex gap-2">
-          <button
-            id="wd-add-assignment-group"
-            type="button"
-            className="inline-flex items-center gap-1 rounded border px-3 py-1.5 text-sm"
-          >
-            <FaPlus /> Group
-          </button>
-          <Link
-            id="wd-add-assignment"
-            href={`/courses/${cid}/assignments/new`}
-            className="inline-flex items-center gap-1 rounded bg-red-600 px-3 py-1.5 text-sm font-medium text-white no-underline"
-          >
-            <FaPlus /> Assignment
-          </Link>
-        </div>
+        {/* Only faculty add assignments. */}
+        {isFaculty && (
+          <div className="flex gap-2">
+            <button
+              id="wd-add-assignment-group"
+              type="button"
+              className="inline-flex items-center gap-1 rounded border px-3 py-1.5 text-sm"
+            >
+              <FaPlus /> Group
+            </button>
+            <Link
+              id="wd-add-assignment"
+              href={`/courses/${cid}/assignments/new`}
+              className="inline-flex items-center gap-1 rounded bg-red-600 px-3 py-1.5 text-sm font-medium text-white no-underline"
+            >
+              <FaPlus /> Assignment
+            </Link>
+          </div>
+        )}
       </div>
       <h3
         id="wd-assignments-title"
@@ -66,6 +72,7 @@ export default function Assignments() {
             cid={cid}
             aid={assignment._id}
             title={assignment.title}
+            canEdit={isFaculty}
             onDelete={() => onDeleteAssignment(assignment._id)}
             details={`Multiple Modules | Not available until ${assignment.available} | Due ${assignment.due} | ${assignment.points} pts`}
           />

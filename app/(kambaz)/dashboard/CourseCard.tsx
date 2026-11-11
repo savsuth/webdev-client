@@ -17,6 +17,7 @@ export default function CourseCard({
   onToggleEnrollment: () => void;
 }) {
   const { currentUser } = useAccountContext();
+  const isFaculty = currentUser?.role === "FACULTY";
   return (
     <div className="wd-dashboard-course w-[300px] max-w-full overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-sm">
       <Link
@@ -46,29 +47,33 @@ export default function CourseCard({
             Go
           </button>
           {/* Both buttons sit inside the card's Link, so preventDefault keeps the click from opening the course. */}
-          <button
-            type="button"
-            id="wd-edit-course-click"
-            className="ms-2 inline-flex items-center justify-center rounded bg-yellow-400 px-3 py-1.5 text-sm font-medium"
-            onClick={(event) => {
-              event.preventDefault();
-              onEdit();
-            }}
-          >
-            Edit
-          </button>
-          <button
-            type="button"
-            id="wd-delete-course-click"
-            className="ms-2 inline-flex items-center justify-center rounded bg-red-600 px-3 py-1.5 text-sm font-medium text-white"
-            onClick={(event) => {
-              event.preventDefault();
-              onDelete();
-            }}
-          >
-            Delete
-          </button>
-          {currentUser && (
+          {isFaculty && (
+            <>
+              <button
+                type="button"
+                id="wd-edit-course-click"
+                className="ms-2 inline-flex items-center justify-center rounded bg-yellow-400 px-3 py-1.5 text-sm font-medium"
+                onClick={(event) => {
+                  event.preventDefault();
+                  onEdit();
+                }}
+              >
+                Edit
+              </button>
+              <button
+                type="button"
+                id="wd-delete-course-click"
+                className="ms-2 inline-flex items-center justify-center rounded bg-red-600 px-3 py-1.5 text-sm font-medium text-white"
+                onClick={(event) => {
+                  event.preventDefault();
+                  onDelete();
+                }}
+              >
+                Delete
+              </button>
+            </>
+          )}
+          {!isFaculty && (
             <button
               type="button"
               className={`wd-enrollment-toggle mt-2 block rounded px-3 py-1.5 text-sm font-medium text-white ${

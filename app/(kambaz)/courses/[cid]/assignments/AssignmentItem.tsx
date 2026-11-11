@@ -6,12 +6,14 @@ export default function AssignmentItem({
   aid,
   title,
   details,
+  canEdit,
   onDelete,
 }: {
   cid: string;
   aid: string;
   title: string;
   details: string;
+  canEdit: boolean;
   onDelete: () => void;
 }) {
   return (
@@ -26,16 +28,18 @@ export default function AssignmentItem({
         </Link>
         <div className="mt-1 text-sm text-neutral-600">{details}</div>
       </div>
-      {/* Like the module trash can, but deleting asks for confirmation first. */}
-      <FaTrash
-        className="wd-delete-assignment mt-1 shrink-0 cursor-pointer text-red-600"
-        title="Delete assignment"
-        onClick={() => {
-          if (window.confirm(`Are you sure you want to remove ${title}?`)) {
-            onDelete();
-          }
-        }}
-      />
+      {/* Like the module trash can, but deleting asks for confirmation first; only faculty see it. */}
+      {canEdit && (
+        <FaTrash
+          className="wd-delete-assignment mt-1 shrink-0 cursor-pointer text-red-600"
+          title="Delete assignment"
+          onClick={() => {
+            if (window.confirm(`Are you sure you want to remove ${title}?`)) {
+              onDelete();
+            }
+          }}
+        />
+      )}
     </li>
   );
 }

@@ -1,5 +1,6 @@
 import axios from "axios";
 
+// Every course request needs the session cookie, because the server requires sign-in.
 const axiosWithCredentials = axios.create({ withCredentials: true });
 const HTTP_SERVER = process.env.NEXT_PUBLIC_HTTP_SERVER;
 const COURSES_API = `${HTTP_SERVER}/api/courses`;
@@ -37,7 +38,7 @@ export type CourseModule = {
 };
 
 export const fetchAllCourses = async () => {
-  const { data } = await axios.get(COURSES_API);
+  const { data } = await axiosWithCredentials.get(COURSES_API);
   return data;
 };
 export const findMyCourses = async () => {
@@ -52,43 +53,43 @@ export const createCourse = async (course: Course) => {
   return data;
 };
 export const deleteCourse = async (courseId: string) => {
-  const { data } = await axios.delete(`${COURSES_API}/${courseId}`);
+  const { data } = await axiosWithCredentials.delete(`${COURSES_API}/${courseId}`);
   return data;
 };
 export const updateCourse = async (course: Course) => {
-  const { data } = await axios.put(`${COURSES_API}/${course._id}`, course);
+  const { data } = await axiosWithCredentials.put(`${COURSES_API}/${course._id}`, course);
   return data;
 };
 
 export const enrollIntoCourse = async (userId: string, courseId: string) => {
-  const response = await axios.post(`${USERS_API}/${userId}/courses/${courseId}`);
+  const response = await axiosWithCredentials.post(`${USERS_API}/${userId}/courses/${courseId}`);
   return response.data;
 };
 export const unenrollFromCourse = async (userId: string, courseId: string) => {
-  const response = await axios.delete(`${USERS_API}/${userId}/courses/${courseId}`);
+  const response = await axiosWithCredentials.delete(`${USERS_API}/${userId}/courses/${courseId}`);
   return response.data;
 };
 export const findUsersForCourse = async (courseId: string) => {
-  const response = await axios.get(`${COURSES_API}/${courseId}/users`);
+  const response = await axiosWithCredentials.get(`${COURSES_API}/${courseId}/users`);
   return response.data;
 };
 
 export const findModulesForCourse = async (courseId: string) => {
-  const response = await axios.get(`${COURSES_API}/${courseId}/modules`);
+  const response = await axiosWithCredentials.get(`${COURSES_API}/${courseId}/modules`);
   return response.data;
 };
 export const createModuleForCourse = async (
   courseId: string,
   module: { name: string },
 ) => {
-  const response = await axios.post(`${COURSES_API}/${courseId}/modules`, module);
+  const response = await axiosWithCredentials.post(`${COURSES_API}/${courseId}/modules`, module);
   return response.data;
 };
 export const deleteModule = async (moduleId: string) => {
-  const response = await axios.delete(`${MODULES_API}/${moduleId}`);
+  const response = await axiosWithCredentials.delete(`${MODULES_API}/${moduleId}`);
   return response.data;
 };
 export const updateModule = async (module: CourseModule) => {
-  const { data } = await axios.put(`${MODULES_API}/${module._id}`, module);
+  const { data } = await axiosWithCredentials.put(`${MODULES_API}/${module._id}`, module);
   return data;
 };

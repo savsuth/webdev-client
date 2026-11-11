@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import * as client from "../client";
+import { useAccountContext } from "../../../../account/AccountContext";
 
 // Shared class strings keep every label and field in the editor styled the same way.
 const LABEL = "mb-1 block font-medium";
@@ -14,6 +15,7 @@ export default function AssignmentEditor() {
   const cid = String(params.cid);
   const aid = String(params.aid);
   const router = useRouter();
+  const { currentUser } = useAccountContext();
   // The editor works on a local draft: a blank assignment for this course until an existing one is retrieved.
   const [assignment, setAssignment] = useState<client.Assignment>({
     ...client.emptyAssignment,
@@ -206,14 +208,17 @@ export default function AssignmentEditor() {
         >
           Cancel
         </Link>
-        <button
-          type="button"
-          onClick={save}
-          id="wd-save"
-          className="rounded bg-red-600 px-3 py-2 text-white"
-        >
-          Save
-        </button>
+        {/* Students open an assignment to read it, so only faculty get Save. */}
+        {currentUser?.role === "FACULTY" && (
+          <button
+            type="button"
+            onClick={save}
+            id="wd-save"
+            className="rounded bg-red-600 px-3 py-2 text-white"
+          >
+            Save
+          </button>
+        )}
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import CourseCard from "./CourseCard";
 import * as client from "../courses/client";
 import { useAccountContext } from "../account/AccountContext";
@@ -20,33 +21,42 @@ const emptyCourse: client.Course = {
 
 export default function Dashboard() {
   const [courses, setCourses] = useState<client.Course[]>([]);
-  // The identifiers of the courses the signed-in user is enrolled in.
+  // The identifiers of the user's own courses: created for faculty, enrolled for everyone else.
   const [enrolledIds, setEnrolledIds] = useState<string[]>([]);
   const [course, setCourse] = useState<client.Course>(emptyCourse);
-  const { currentUser } = useAccountContext();
+  const { currentUser, loading } = useAccountContext();
   const [showAllCourses, setShowAllCourses] = useState(false);
+  const router = useRouter();
+  const isFaculty = currentUser?.role === "FACULTY";
 
   // Retrieve the courses from the server on load, and again when a different user signs in.
   useEffect(() => {
+    if (loading) return;
+    if (!currentUser) {
+      router.push("/account/signin");
+      return;
+    }
     const fetchCourses = async () => {
       try {
-        setCourses(await client.fetchAllCourses());
-        const myCourses: client.Course[] = currentUser
-          ? await client.findMyCourses()
-          : [];
+        const myCourses: client.Course[] = await client.findMyCourses();
+        // Faculty work only with the courses they created; other users also load every course to enroll in.
+        setCourses(
+          currentUser.role === "FACULTY"
+            ? myCourses
+            : await client.fetchAllCourses(),
+        );
         setEnrolledIds(myCourses.map((c) => c._id));
       } catch {
         setCourses([]);
       }
     };
     fetchCourses();
-  }, [currentUser]);
+  }, [currentUser, loading, router]);
 
   const onAddCourse = async () => {
     const newCourse = await client.createCourse(course);
     setCourses([...courses, newCourse]);
-    // The server enrolls a signed-in creator in the new course.
-    if (currentUser) setEnrolledIds([...enrolledIds, newCourse._id]);
+    setEnrolledIds([...enrolledIds, newCourse._id]);
   };
   const onDeleteCourse = async (courseId: string) => {
     await client.deleteCourse(courseId);
@@ -67,18 +77,17 @@ export default function Dashboard() {
     }
   };
 
-  // Signed in, show only the user's enrolled courses unless Enrollments is toggled on.
-  // Signed out, show every course so Add, Edit, and Delete still have cards to work on.
-  const visibleCourses =
-    currentUser && !showAllCourses
-      ? courses.filter((c) => enrolledIds.includes(c._id))
-      : courses;
+  // Show only the user's own courses unless a student toggled Enrollments on to browse all of them.
+  const visibleCourses = showAllCourses
+    ? courses
+    : courses.filter((c) => enrolledIds.includes(c._id));
 
+  if (!currentUser) return null;
   return (
     <div id="wd-dashboard">
       <h1 id="wd-dashboard-title" className="flex items-center justify-between">
         Dashboard
-        {currentUser && (
+        {!isFaculty && (
           <button
             type="button"
             id="wd-enrollments-toggle"
@@ -90,59 +99,70 @@ export default function Dashboard() {
         )}
       </h1>
       <hr />
-      <h5 className="flex flex-wrap items-center gap-2">
-        New Course
-        <button
-          type="button"
-          className="rounded bg-blue-600 px-3 py-1.5 text-sm font-medium text-white"
-          id="wd-add-new-course-click"
-          onClick={onAddCourse}
-        >
-          Add
-        </button>
-        <button
-          type="button"
-          className="rounded bg-yellow-400 px-3 py-1.5 text-sm font-medium"
-          id="wd-update-course-click"
-          onClick={onUpdateCourse}
-        >
-          Update
-        </button>
-      </h5>
-      <input
-        className="mb-2 mt-2 block w-full max-w-xl rounded border border-neutral-300 px-3 py-1.5"
-        value={course.name}
-        onChange={(e) => setCourse({ ...course, name: e.target.value })}
-        id="wd-course-name"
-      />
-      <textarea
-        className="mb-2 block w-full max-w-xl rounded border border-neutral-300 px-3 py-1.5"
-        rows={3}
-        value={course.description}
-        onChange={(e) =>
-          setCourse({ ...course, description: e.target.value })
-        }
-        id="wd-course-description"
-      />
-      <input
-        className="mb-2 block w-full max-w-xl rounded border border-neutral-300 px-3 py-1.5"
-        value={course.number}
-        onChange={(e) => setCourse({ ...course, number: e.target.value })}
-        id="wd-course-number"
-        placeholder="Course number"
-      />
-      <input
-        type="date"
-        className="mb-3 block w-full max-w-xl rounded border border-neutral-300 px-3 py-1.5"
-        value={course.startDate}
-        onChange={(e) => setCourse({ ...course, startDate: e.target.value })}
-        id="wd-course-start-date"
-      />
-      <hr />
+      {/* Only faculty create and edit courses, so only they get the course form. */}
+      {isFaculty && (
+        <>
+          <h5 className="flex flex-wrap items-center gap-2">
+            New Course
+            <button
+              type="button"
+              className="rounded bg-blue-600 px-3 py-1.5 text-sm font-medium text-white"
+              id="wd-add-new-course-click"
+              onClick={onAddCourse}
+            >
+              Add
+            </button>
+            <button
+              type="button"
+              className="rounded bg-yellow-400 px-3 py-1.5 text-sm font-medium"
+              id="wd-update-course-click"
+              onClick={onUpdateCourse}
+            >
+              Update
+            </button>
+          </h5>
+          <input
+            className="mb-2 mt-2 block w-full max-w-xl rounded border border-neutral-300 px-3 py-1.5"
+            value={course.name}
+            onChange={(e) => setCourse({ ...course, name: e.target.value })}
+            id="wd-course-name"
+          />
+          <textarea
+            className="mb-2 block w-full max-w-xl rounded border border-neutral-300 px-3 py-1.5"
+            rows={3}
+            value={course.description}
+            onChange={(e) =>
+              setCourse({ ...course, description: e.target.value })
+            }
+            id="wd-course-description"
+          />
+          <input
+            className="mb-2 block w-full max-w-xl rounded border border-neutral-300 px-3 py-1.5"
+            value={course.number}
+            onChange={(e) => setCourse({ ...course, number: e.target.value })}
+            id="wd-course-number"
+            placeholder="Course number"
+          />
+          <input
+            type="date"
+            className="mb-3 block w-full max-w-xl rounded border border-neutral-300 px-3 py-1.5"
+            value={course.startDate}
+            onChange={(e) => setCourse({ ...course, startDate: e.target.value })}
+            id="wd-course-start-date"
+          />
+          <hr />
+        </>
+      )}
       <h2 id="wd-dashboard-published">
         Published Courses ({visibleCourses.length})
       </h2>
       <hr />
+      {!isFaculty && !showAllCourses && visibleCourses.length === 0 && (
+        <p id="wd-dashboard-empty">
+          You are not enrolled in any course yet. Click Enrollments to see all
+          courses and enroll.
+        </p>
+      )}
       <div
         id="wd-dashboard-courses"
         className="grid grid-cols-1 gap-8 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"

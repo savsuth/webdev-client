@@ -9,6 +9,7 @@ import { emptyUser, useAccountContext } from "../AccountContext";
 export default function Signup() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState("STUDENT");
   const [errorMessage, setErrorMessage] = useState("");
   const { setCurrentUser } = useAccountContext();
   const router = useRouter();
@@ -17,7 +18,7 @@ export default function Signup() {
   const signup = async () => {
     if (!username || !password) return;
     try {
-      const user = await client.signup({ ...emptyUser, username, password });
+      const user = await client.signup({ ...emptyUser, username, password, role });
       setCurrentUser(user);
       router.push("/account/profile");
     } catch {
@@ -48,6 +49,16 @@ export default function Signup() {
         type="password"
         className="wd-password-verify mb-2 w-full rounded border border-neutral-300 px-3 py-2"
       />
+      {/* The role decides what the new user may do: faculty create courses, students enroll in them. */}
+      <select
+        id="wd-role"
+        value={role}
+        onChange={(e) => setRole(e.target.value)}
+        className="wd-role mb-2 w-full rounded border border-neutral-300 px-3 py-2"
+      >
+        <option value="STUDENT">Student</option>
+        <option value="FACULTY">Faculty</option>
+      </select>
       {errorMessage && (
         <p id="wd-signup-error" className="mb-2 rounded bg-red-100 px-3 py-2 text-red-800">
           {errorMessage}

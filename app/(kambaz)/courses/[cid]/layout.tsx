@@ -17,21 +17,26 @@ export default function CoursesLayout({
   const courseId = typeof cid === "string" ? cid : "";
   const [course, setCourse] = useState<client.Course>();
   const [showCourseNav, setShowCourseNav] = useState(true);
-  const { currentUser } = useAccountContext();
+  const { currentUser, loading } = useAccountContext();
   const router = useRouter();
-  // A signed-in user may open only enrolled courses; signed-out visitors keep the prototype open.
+  // A course opens only for a signed-in user who created it or is enrolled in it.
   useEffect(() => {
+    if (loading) return;
+    if (!currentUser) {
+      router.push("/account/signin");
+      return;
+    }
     const fetchCourse = async () => {
-      const courses: client.Course[] = currentUser
-        ? await client.findMyCourses()
-        : await client.fetchAllCourses();
+      const courses: client.Course[] = await client.findMyCourses();
       const found = courses.find((c) => c._id === courseId);
       setCourse(found);
-      if (currentUser && !found) router.push("/dashboard");
+      if (!found) router.push("/dashboard");
     };
     fetchCourse();
-  }, [currentUser, courseId, router]);
+  }, [currentUser, loading, courseId, router]);
 
+  // The course screens load their data from the server, so they wait until the course is confirmed.
+  if (!course) return null;
   return (
     <div id="wd-courses">
       <h2 className="text-red-600">

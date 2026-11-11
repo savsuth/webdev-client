@@ -5,7 +5,11 @@ import { FaCheck, FaUserCircle } from "react-icons/fa";
 import { FaPencil } from "react-icons/fa6";
 import { IoCloseSharp } from "react-icons/io5";
 import * as client from "../../../account/client";
-import { emptyUser, type User } from "../../../account/AccountContext";
+import {
+  emptyUser,
+  useAccountContext,
+  type User,
+} from "../../../account/AccountContext";
 
 const FIELD = "rounded border border-neutral-300 px-2 py-1";
 const ICON_BUTTON = "float-end border-0 bg-transparent";
@@ -20,6 +24,9 @@ export default function PeopleDetails({
   const [user, setUser] = useState<User>(emptyUser);
   const [name, setName] = useState("");
   const [editing, setEditing] = useState(false);
+  const { currentUser } = useAccountContext();
+  // Only faculty and administrators edit or delete a user; everyone else reads the details.
+  const canEdit = currentUser?.role === "FACULTY" || currentUser?.role === "ADMIN";
   useEffect(() => {
     const fetchUser = async () => {
       if (!uid) return;
@@ -28,6 +35,7 @@ export default function PeopleDetails({
     fetchUser();
   }, [uid]);
   const editUser = () => {
+    if (!canEdit) return;
     setName(`${user.firstName} ${user.lastName}`);
     setEditing(true);
   };
@@ -59,7 +67,7 @@ export default function PeopleDetails({
       </div>
       <hr />
       <div className="wd-name text-lg text-red-700">
-        {!editing && (
+        {!editing && canEdit && (
           <button type="button" onClick={editUser} className={`wd-edit ${ICON_BUTTON}`}>
             <FaPencil className="text-lg" />
           </button>
@@ -120,13 +128,15 @@ export default function PeopleDetails({
       <b>Total Activity:</b>{" "}
       <span className="wd-total-activity">{user.totalActivity}</span>
       <hr />
-      <button
-        type="button"
-        onClick={() => deleteUser(uid)}
-        className="wd-delete float-end rounded border-0 bg-red-600 px-3 py-1 text-sm text-white"
-      >
-        Delete
-      </button>
+      {canEdit && (
+        <button
+          type="button"
+          onClick={() => deleteUser(uid)}
+          className="wd-delete float-end rounded border-0 bg-red-600 px-3 py-1 text-sm text-white"
+        >
+          Delete
+        </button>
+      )}
       <button
         type="button"
         onClick={onClose}
