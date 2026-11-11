@@ -26,6 +26,11 @@ export default function Labs() {
           </Link>
         </li>
         <li>
+          <Link href="/labs/lab6" id="wd-lab6-link">
+            Lab 6: MongoDB
+          </Link>
+        </li>
+        <li>
           <a
             href="https://github.com/savsuth/webdev-client"
             id="wd-github"
