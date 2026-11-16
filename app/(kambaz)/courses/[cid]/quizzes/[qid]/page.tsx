@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { FaPencilAlt } from "react-icons/fa";
+import { RichTextView } from "../RichText";
 import * as client from "../client";
 import { useAccountContext } from "../../../../account/AccountContext";
 
@@ -68,6 +69,11 @@ export default function QuizDetails() {
       <h3 id="wd-quiz-title" className="mb-4 text-2xl font-semibold">
         {quiz.title}
       </h3>
+      {quiz.description && (
+        <div id="wd-quiz-description" className="mb-4">
+          <RichTextView value={quiz.description} />
+        </div>
+      )}
       <table id="wd-quiz-settings" className="mb-6">
         <tbody>
           {settings.map(([label, value]) => (

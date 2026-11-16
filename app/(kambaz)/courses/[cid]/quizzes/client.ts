@@ -39,6 +39,12 @@ export type Quiz = {
   questions: Question[];
 };
 
+export const QUESTION_TYPES: Record<string, string> = {
+  MULTIPLE_CHOICE: "Multiple Choice",
+  TRUE_FALSE: "True/False",
+  FILL_IN_BLANK: "Fill in the Blank",
+};
+
 export const findQuizzesForCourse = async (courseId: string) => {
   const response = await axiosWithCredentials.get(`${COURSES_API}/${courseId}/quizzes`);
   return response.data;
