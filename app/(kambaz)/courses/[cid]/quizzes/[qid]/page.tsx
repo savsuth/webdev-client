@@ -19,11 +19,14 @@ export default function QuizDetails() {
   const { currentUser } = useAccountContext();
   const isFaculty = currentUser?.role === "FACULTY";
   const [quiz, setQuiz] = useState<client.Quiz>();
+  const [taken, setTaken] = useState(false);
   // The server answers 404 for a quiz that does not exist or is not published to this user.
   useEffect(() => {
-    client
-      .findQuizById(qid)
-      .then(setQuiz)
+    Promise.all([client.findQuizById(qid), client.findLastAttempt(qid)])
+      .then(([quiz, attempt]) => {
+        setQuiz(quiz);
+        setTaken(Boolean(attempt));
+      })
       .catch(() => router.push(`/courses/${cid}/quizzes`));
   }, [cid, qid, router]);
   if (!quiz) return null;
@@ -61,7 +64,7 @@ export default function QuizDetails() {
             href={`${href}/take`}
             className="rounded bg-red-600 px-3 py-1.5 font-medium text-white no-underline"
           >
-            Start
+            {taken ? "View Last Attempt" : "Start"}
           </Link>
         )}
       </div>

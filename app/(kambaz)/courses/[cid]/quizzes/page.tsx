@@ -14,13 +14,19 @@ export default function Quizzes() {
   const router = useRouter();
   // The list stays undefined until the server answers, so the empty message does not flash first.
   const [quizzes, setQuizzes] = useState<client.Quiz[]>();
+  const [attempts, setAttempts] = useState<(client.Attempt | null)[]>([]);
   const [sortBy, setSortBy] = useState<"title" | "due" | "available">("title");
   useEffect(() => {
     const fetchQuizzes = async () => {
-      setQuizzes(await client.findQuizzesForCourse(cid));
+      const quizzes: client.Quiz[] = await client.findQuizzesForCourse(cid);
+      setQuizzes(quizzes);
+      // Faculty take no quizzes, so only the other roles ask for their last attempt of each quiz.
+      if (!isFaculty) {
+        setAttempts(await Promise.all(quizzes.map((q) => client.findLastAttempt(q._id))));
+      }
     };
     fetchQuizzes();
-  }, [cid]);
+  }, [cid, isFaculty]);
   if (!quizzes) return null;
   const sorted = [...quizzes].sort((a, b) =>
     (a[sortBy] ?? "").localeCompare(b[sortBy] ?? ""),
@@ -88,6 +94,7 @@ export default function Quizzes() {
             key={quiz._id}
             cid={cid}
             quiz={quiz}
+            attempt={attempts.find((a) => a?.quiz === quiz._id)}
             canEdit={isFaculty}
             onDelete={() => deleteQuiz(quiz._id)}
             onTogglePublished={() => togglePublished(quiz)}

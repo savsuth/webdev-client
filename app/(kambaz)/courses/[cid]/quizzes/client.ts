@@ -39,6 +39,19 @@ export type Quiz = {
   questions: Question[];
 };
 
+// A graded question: given is the answer the student gave; the key arrives only when the quiz shows it.
+export type AnsweredQuestion = Question & { given: string; correct: boolean };
+
+// The faculty preview is graded but not stored, so its result has no quiz, user or attempt number.
+export type Attempt = {
+  quiz?: string;
+  attempt?: number;
+  score: number;
+  points: number;
+  submitted: string;
+  questions: AnsweredQuestion[];
+};
+
 export const QUESTION_TYPES: Record<string, string> = {
   MULTIPLE_CHOICE: "Multiple Choice",
   TRUE_FALSE: "True/False",
@@ -64,6 +77,16 @@ export const updateQuiz = async (quizId: string, quizUpdates: Partial<Quiz>) => 
 };
 export const deleteQuiz = async (quizId: string) => {
   const response = await axiosWithCredentials.delete(`${QUIZZES_API}/${quizId}`);
+  return response.data;
+};
+// answers holds the given answer of each question by question id; the server grades them.
+export const submitAttempt = async (quizId: string, answers: Record<string, string>) => {
+  const response = await axiosWithCredentials.post(`${QUIZZES_API}/${quizId}/attempts`, { answers });
+  return response.data;
+};
+// The server answers null when the current user has not taken the quiz.
+export const findLastAttempt = async (quizId: string) => {
+  const response = await axiosWithCredentials.get(`${QUIZZES_API}/${quizId}/attempts/last`);
   return response.data;
 };
 

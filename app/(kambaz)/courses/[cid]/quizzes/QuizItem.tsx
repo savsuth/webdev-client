@@ -10,12 +10,14 @@ const MENU_ITEM = "block w-full px-3 py-1.5 text-left text-neutral-900 no-underl
 export default function QuizItem({
   cid,
   quiz,
+  attempt,
   canEdit,
   onDelete,
   onTogglePublished,
 }: {
   cid: string;
   quiz: client.Quiz;
+  attempt?: client.Attempt | null;
   canEdit: boolean;
   onDelete: () => void;
   onTogglePublished: () => void;
@@ -41,6 +43,13 @@ export default function QuizItem({
           )}{" "}
           | {client.quizPoints(quiz)} pts | {questions}{" "}
           {questions === 1 ? "Question" : "Questions"}
+          {/* A student who has taken the quiz sees the score of the last attempt. */}
+          {attempt && (
+            <span className="wd-quiz-score">
+              {" "}
+              | <b>Score:</b> {attempt.score} out of {attempt.points}
+            </span>
+          )}
         </div>
       </div>
       {/* Only faculty see whether a quiz is published, publish it, and open its menu. */}
