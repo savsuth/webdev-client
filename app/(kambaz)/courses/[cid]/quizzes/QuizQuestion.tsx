@@ -1,3 +1,4 @@
+import { FaCheck, FaTimes } from "react-icons/fa";
 import { RichTextView } from "./RichText";
 import * as client from "./client";
 import { useAnswersStore } from "./store";
@@ -17,9 +18,14 @@ export default function QuizQuestion({
   const options = question.type === "TRUE_FALSE" ? ["True", "False"] : question.choices;
   return (
     <div className="wd-quiz-question mb-4">
+      {graded && question.correct && (
+        <span className="wd-quiz-correct inline-flex items-center gap-1 bg-green-600 px-2 py-0.5 text-sm font-semibold text-white">
+          <FaCheck /> Correct
+        </span>
+      )}
       {graded && !question.correct && (
-        <span className="wd-quiz-incorrect inline-block bg-red-600 px-2 py-0.5 text-sm font-semibold text-white">
-          Incorrect
+        <span className="wd-quiz-incorrect inline-flex items-center gap-1 bg-red-600 px-2 py-0.5 text-sm font-semibold text-white">
+          <FaTimes /> Incorrect
         </span>
       )}
       <div className="border border-neutral-300">

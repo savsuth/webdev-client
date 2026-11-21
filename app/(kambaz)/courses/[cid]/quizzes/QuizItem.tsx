@@ -5,6 +5,14 @@ import { IoEllipsisVertical } from "react-icons/io5";
 import GreenCheckmark from "../modules/GreenCheckmark";
 import * as client from "./client";
 
+// The list can be sorted by these fields from the menu of any quiz.
+export const SORTS = [
+  ["title", "name"],
+  ["due", "due date"],
+  ["available", "available date"],
+] as const;
+export type SortKey = (typeof SORTS)[number][0];
+
 const MENU_ITEM = "block w-full px-3 py-1.5 text-left text-neutral-900 no-underline hover:bg-neutral-100";
 
 export default function QuizItem({
@@ -14,6 +22,8 @@ export default function QuizItem({
   canEdit,
   onDelete,
   onTogglePublished,
+  sortBy,
+  onSort,
 }: {
   cid: string;
   quiz: client.Quiz;
@@ -21,6 +31,8 @@ export default function QuizItem({
   canEdit: boolean;
   onDelete: () => void;
   onTogglePublished: () => void;
+  sortBy: SortKey;
+  onSort: (sortBy: SortKey) => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const href = `/courses/${cid}/quizzes/${quiz._id}`;
@@ -72,7 +84,7 @@ export default function QuizItem({
             <IoEllipsisVertical className="text-xl" />
           </button>
           {menuOpen && (
-            <div className="wd-quiz-menu absolute top-7 right-0 z-10 w-32 rounded border border-neutral-300 bg-white py-1 text-sm shadow">
+            <div className="wd-quiz-menu absolute top-7 right-0 z-10 w-48 rounded border border-neutral-300 bg-white py-1 text-sm shadow">
               <Link href={href} className={`wd-quiz-edit ${MENU_ITEM}`}>
                 Edit
               </Link>
@@ -98,6 +110,19 @@ export default function QuizItem({
               >
                 {quiz.published ? "Unpublish" : "Publish"}
               </button>
+              {SORTS.map(([key, label]) => (
+                <button
+                  key={key}
+                  type="button"
+                  className={`wd-quiz-sort border-0 bg-transparent ${MENU_ITEM} ${sortBy === key ? "font-semibold" : ""}`}
+                  onClick={() => {
+                    setMenuOpen(false);
+                    onSort(key);
+                  }}
+                >
+                  Sort by {label}
+                </button>
+              ))}
             </div>
           )}
         </div>

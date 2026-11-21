@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { FaPlus } from "react-icons/fa";
-import QuizItem from "./QuizItem";
+import QuizItem, { type SortKey } from "./QuizItem";
 import * as client from "./client";
 import { useAccountContext } from "../../../account/AccountContext";
 
@@ -15,7 +15,7 @@ export default function Quizzes() {
   // The list stays undefined until the server answers, so the empty message does not flash first.
   const [quizzes, setQuizzes] = useState<client.Quiz[]>();
   const [attempts, setAttempts] = useState<(client.Attempt | null)[]>([]);
-  const [sortBy, setSortBy] = useState<"title" | "due" | "available">("title");
+  const [sortBy, setSortBy] = useState<SortKey>("title");
   useEffect(() => {
     const fetchQuizzes = async () => {
       const quizzes: client.Quiz[] = await client.findQuizzesForCourse(cid);
@@ -49,20 +49,7 @@ export default function Quizzes() {
   };
   return (
     <div id="wd-quizzes">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <label htmlFor="wd-sort-quizzes" className="flex items-center gap-2 text-sm">
-          Sort by
-          <select
-            id="wd-sort-quizzes"
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-            className="rounded border px-2 py-1.5"
-          >
-            <option value="title">Name</option>
-            <option value="due">Due date</option>
-            <option value="available">Available date</option>
-          </select>
-        </label>
+      <div className="mb-4 flex flex-wrap items-center justify-end gap-2">
         {/* Only faculty add quizzes. */}
         {isFaculty && (
           <button
@@ -98,6 +85,8 @@ export default function Quizzes() {
             canEdit={isFaculty}
             onDelete={() => deleteQuiz(quiz._id)}
             onTogglePublished={() => togglePublished(quiz)}
+            sortBy={sortBy}
+            onSort={setSortBy}
           />
         ))}
       </ul>

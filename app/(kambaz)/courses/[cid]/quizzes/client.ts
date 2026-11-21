@@ -52,6 +52,9 @@ export type Attempt = {
   questions: AnsweredQuestion[];
 };
 
+// Why a student may not begin a quiz; codeRequired means typing the right access code would let them.
+export type Refusal = { message: string; codeRequired: boolean };
+
 export const QUESTION_TYPES: Record<string, string> = {
   MULTIPLE_CHOICE: "Multiple Choice",
   TRUE_FALSE: "True/False",
@@ -80,9 +83,26 @@ export const deleteQuiz = async (quizId: string) => {
   return response.data;
 };
 // answers holds the given answer of each question by question id; the server grades them.
-export const submitAttempt = async (quizId: string, answers: Record<string, string>) => {
-  const response = await axiosWithCredentials.post(`${QUIZZES_API}/${quizId}/attempts`, { answers });
+export const submitAttempt = async (
+  quizId: string,
+  answers: Record<string, string>,
+  accessCode = "",
+) => {
+  const response = await axiosWithCredentials.post(`${QUIZZES_API}/${quizId}/attempts`, {
+    answers,
+    accessCode,
+  });
   return response.data;
+};
+// The server answers null when the user may begin the quiz, or the reason they may not.
+export const checkAccess = async (quizId: string, accessCode = ""): Promise<Refusal | null> => {
+  try {
+    await axiosWithCredentials.post(`${QUIZZES_API}/${quizId}/access`, { accessCode });
+    return null;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response?.status === 403) return error.response.data;
+    throw error;
+  }
 };
 // The server answers null when the current user has not taken the quiz.
 export const findLastAttempt = async (quizId: string) => {
