@@ -1,43 +1,25 @@
-<h3 align="center">Kambaz Quizzes: Client</h3>
+# Kambaz Quizzes
 
-<p align="center">The web client of Kambaz Quizzes, a quiz tool added to the Kambaz learning management system.</p>
+Kambaz Quizzes is the CS 5610 final project, extending the Kambaz course application with an integrated quiz and assessment system. Faculty members can create and manage quizzes within their courses, including multiple-choice, true/false, and fill-in-the-blank questions. They can configure quiz settings such as availability dates, due dates, access codes, allowed attempts, and question display preferences before previewing and publishing a quiz.
 
----
+Students can access published quizzes within their enrolled courses, complete assessments (one question at a time when the quiz is set that way), and review their results and most recent attempt after submission.
 
-## Table of Contents
-- [About](#about)
-- [Getting Started](#getting_started)
-- [Running the Tests](#tests)
-- [Usage](#usage)
-- [Deployment](#deployment)
-- [Built Using](#built_using)
-- [Authors](#authors)
-- [Acknowledgements](#acknowledgement)
+This repository contains the client-side application, built with Next.js. The server-side application, developed using Node.js, Express, and MongoDB, is available at [webdev-server](https://github.com/savsuth/webdev-server). The project design and user documentation are available in [docs/design-and-user-guide.md](docs/design-and-user-guide.md).
 
-## About <a name = "about"></a>
-Kambaz Quizzes is the CS 5610 final project. It extends the Kambaz course application with
-quizzes. Faculty create a quiz in a course, write multiple choice, true/false and fill in the
-blank questions, choose settings such as available dates, an access code, multiple attempts and
-one question at a time, preview the quiz, and publish it. Students see the published quizzes of
-their courses, take them, and see their score and their last attempt.
+The project is maintained on the `project` branch. The application opens with a landing page displaying the author's information, course section, and links to both repositories.
 
-This repository is the client, a Next.js application. The server, a Node.js and Express API with
-MongoDB, is at [github.com/savsuth/webdev-server](https://github.com/savsuth/webdev-server). The
-design and user document is [docs/design-and-user-guide.md](docs/design-and-user-guide.md).
+## Getting Started
 
-The project lives on the `project` branch. The site opens on a landing page with the author,
-course section and links to both repositories.
-
-## Getting Started <a name = "getting_started"></a>
-These steps run the client on your own computer. It needs the server running first; see the
-server's README.
+Follow these steps to run the client application locally. The server must be running before starting the client. Refer to the server's README for setup instructions.
 
 ### Prerequisites
-- [Node.js](https://nodejs.org/) and npm
-- The Kambaz Quizzes server running, locally at `http://localhost:4000`
 
-### Installing
-Clone the repository and install the packages:
+- Node.js and npm installed
+- Kambaz Quizzes server running locally at `http://localhost:4000`
+
+### Installation
+
+Clone the project repository and install its dependencies:
 
 ```bash
 git clone -b project https://github.com/savsuth/webdev-client.git
@@ -45,24 +27,23 @@ cd webdev-client
 npm install
 ```
 
-Create a file named `.env.development` in the project folder (it is not committed) that tells
-the client where the server is:
+Create a `.env.development` file in the project root to configure the server URL. This file is excluded from version control.
 
-```bash
+```env
 NEXT_PUBLIC_HTTP_SERVER=http://localhost:4000
 ```
 
-Start the development server and open [http://localhost:3000](http://localhost:3000):
+Start the development server and open `http://localhost:3000` in your browser:
 
 ```bash
 npm run dev
 ```
 
-The landing page appears. Choose Sign in and use one of the test accounts under
-[Usage](#usage).
+The landing page will appear. Select **Sign in** and use one of the test accounts listed under [Usage](#usage).
 
-## Running the Tests <a name = "tests"></a>
-Check the code style and the types, then make a production build:
+## Code Validation and Production Build
+
+Run the following commands to check code quality, validate TypeScript types, and generate a production build:
 
 ```bash
 npm run lint
@@ -70,56 +51,78 @@ npx tsc --noEmit
 npm run build
 ```
 
-A production build does not read `.env.development`, so give it the server address:
+For a production build, provide the server URL explicitly:
 
 ```bash
 NEXT_PUBLIC_HTTP_SERVER=http://localhost:4000 npm run build
 npm start
 ```
 
-## Usage <a name = "usage"></a>
-Sign in with one of the seeded test accounts:
+## Usage
+
+Use one of the following preconfigured test accounts to sign in:
 
 | Role | Username | Password |
-| --- | --- | --- |
+|---|---|---|
 | Faculty | `bruce_banner` | `banner123` |
 | Student | `iron_man` | `stark123` |
 
-As faculty, open Dashboard, choose a course you teach (for example Rocket Propulsion), and open
-Quizzes in the course menu. "+ Quiz" creates a quiz and opens it; Edit opens the editor with a
-Details tab and a Questions tab; Save and Publish makes the quiz visible to students; Preview
-takes the quiz without storing anything. As a student, open the same course, open Quizzes,
-choose a quiz, and press Start. The design and user document walks through both in full.
+### Faculty
 
-The quiz screens are under `app/(kambaz)/courses/[cid]/quizzes/`:
+Navigate to **Dashboard**, select a course you teach (e.g., Rocket Propulsion), and open **Quizzes** from the course menu.
 
-| File | Screen or role |
-| --- | --- |
-| `page.tsx`, `QuizItem.tsx` | Quiz list with availability, due date, points, questions and a student's last score |
-| `[qid]/page.tsx` | Quiz Details: the settings, Preview and Edit for faculty, Start for students |
-| `[qid]/editor/` | Quiz editor: Details and Questions tabs, the three question editors |
-| `[qid]/preview/page.tsx` | Faculty preview, graded but not stored |
-| `[qid]/take/page.tsx` | Taking a quiz: the reason it is closed, the access code, the form, the result |
-| `QuizForm.tsx`, `QuizQuestion.tsx`, `AttemptResult.tsx` | The quiz form, one question, a graded attempt |
-| `store.ts` | Zustand store holding the answers while a quiz is being taken |
-| `client.ts` | Types and the HTTP calls to the server |
+- Select **+ Quiz** to create a new quiz.
+- Use the **Details** tab to configure quiz settings.
+- Use the **Questions** tab to create and manage quiz questions.
+- Select **Save and Publish** to make the quiz available to students.
+- Use **Preview** to test the quiz without recording an attempt.
 
-## Deployment <a name = "deployment"></a>
-The `project` branch is deployed on Vercel at
-[webdev-client-aasavsuthar-git-project-nphuric.vercel.app](https://webdev-client-aasavsuthar-git-project-nphuric.vercel.app).
-Vercel builds it with `npm run build`, with `NEXT_PUBLIC_HTTP_SERVER` set to the deployed server,
-[webdev-server-aasav-project.onrender.com](https://webdev-server-aasav-project.onrender.com).
+### Students
 
-## Built Using <a name = "built_using"></a>
-- [Next.js 16](https://nextjs.org/) and [React 19](https://react.dev/) - web framework
-- [Tailwind CSS 4](https://tailwindcss.com/) - styling
-- [Zustand 5](https://zustand.docs.pmnd.rs/) - quiz-taking state
-- [Tiptap 3](https://tiptap.dev/) - rich text for quiz descriptions and questions
-- [Axios](https://axios-http.com/) - HTTP calls to the server
+Navigate to an enrolled course and open **Quizzes** from the course menu.
 
-## Authors <a name = "authors"></a>
-- Aasav Suthar, CS 5610, Section 1 - design and implementation
+- Select a published quiz to view its details.
+- Click **Start** to begin the quiz.
+- Answer the questions and submit the completed attempt.
+- Review the resulting score and most recent attempt.
 
-## Acknowledgements <a name = "acknowledgement"></a>
-- The Kambaz application and the CS 5610 course material it is built on
-- The project requirements at [kambaz.dev/project/quizzes](https://kambaz.dev/project/quizzes)
+For a complete walkthrough of both faculty and student workflows, refer to the [Design and User Guide](docs/design-and-user-guide.md).
+
+## Project Structure
+
+The quiz-related components are located under `app/(kambaz)/courses/[cid]/quizzes/`:
+
+| File / Directory | Description |
+|---|---|
+| `page.tsx`, `QuizItem.tsx` | Quiz listing with availability, due dates, points, question counts, and students' most recent scores |
+| `[qid]/page.tsx` | Quiz details, settings, faculty preview and editing options, and student access |
+| `[qid]/editor/` | Quiz editor containing Details and Questions tabs and the three question editors |
+| `[qid]/preview/page.tsx` | Faculty quiz preview with grading but without storing the attempt |
+| `[qid]/take/page.tsx` | Quiz-taking interface, including availability restrictions, access codes, questions, and results |
+| `QuizForm.tsx`, `QuizQuestion.tsx`, `AttemptResult.tsx` | Quiz form, individual question display, and graded attempt results |
+| `store.ts` | Zustand store for managing answers during a quiz attempt |
+| `client.ts` | Type definitions and HTTP requests to the server |
+
+## Deployment
+
+The `project` branch is deployed on Vercel:
+
+[webdev-client-aasavsuthar-git-project-nphuric.vercel.app](https://webdev-client-aasavsuthar-git-project-nphuric.vercel.app)
+
+Vercel builds the application using `npm run build`, with `NEXT_PUBLIC_HTTP_SERVER` configured to point to the deployed server on Render:
+
+`webdev-server-aasav-project.onrender.com`
+
+## Built Using
+
+- **Next.js 16 and React 19** - Web framework
+- **Tailwind CSS 4** - Styling
+- **Zustand 5** - State management for quiz attempts
+- **Tiptap 3** - Rich-text editing for quiz descriptions and questions
+- **Axios** - HTTP communication with the server
+
+## Authors
+
+**Aasav Suthar**  
+CS 5610, Section 1  
+Design and Implementation

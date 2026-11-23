@@ -1,243 +1,432 @@
 # Kambaz Quizzes: Design and User Guide
 
-Aasav Suthar, CS 5610, Section 1
+**Aasav Suthar**  
+CS 5610, Section 1
 
-Client: [github.com/savsuth/webdev-client](https://github.com/savsuth/webdev-client) (branch
-`project`). Server: [github.com/savsuth/webdev-server](https://github.com/savsuth/webdev-server)
-(branch `project`). Live site:
-[webdev-client-aasavsuthar-git-project-nphuric.vercel.app](https://webdev-client-aasavsuthar-git-project-nphuric.vercel.app).
+- **Client:** [webdev-client](https://github.com/savsuth/webdev-client) (`project` branch)
+- **Server:** [webdev-server](https://github.com/savsuth/webdev-server) (`project` branch)
+- **Live Application:** [Kambaz Quizzes](https://webdev-client-aasavsuthar-git-project-nphuric.vercel.app)
 
-## 1. Goals
+## 1. Project Goals
 
-Kambaz is the learning management system built during CS 5610. It already let faculty manage
-courses, modules and assignments, and let students browse and enroll in courses. This project adds
-quizzes, in the spirit of the quiz tool found in commercial learning management systems.
+Kambaz is a learning management system developed as part of CS 5610. It provides functionality for faculty to manage courses, modules, and assignments, while allowing students to browse and enroll in courses. This project extends the existing application by introducing a quiz and assessment system similar to those available in commercial learning management platforms.
 
-The project had four goals. The first was to let faculty build a quiz inside a course: give it a
-title and a description, write questions of three types (multiple choice, true/false and fill in
-the blank), and choose the settings that govern how students take it. The second was to let
-faculty check a quiz before students see it, by previewing it exactly as a student would, without
-anything being recorded. The third was to let students take published quizzes, have their answers
-graded at once, and come back later to see their last attempt and score. The fourth was to make
-the rules trustworthy: a student must not be able to see the correct answers before submitting,
-take a quiz outside its dates, skip its access code, or take it more often than allowed, even by
-sending requests to the server directly instead of using the screens.
+The project focuses on four primary goals:
 
-## 2. Users and roles
+1. **Quiz Creation and Management:** Allow faculty to create quizzes within their courses, configure titles and descriptions, add multiple-choice, true/false, and fill-in-the-blank questions, and manage quiz settings.
+2. **Quiz Preview:** Allow faculty to preview quizzes from the student's perspective before publishing them, without recording or storing an attempt.
+3. **Student Assessments:** Allow students to take published quizzes, receive automatically graded results upon submission, and review their most recent attempts and scores.
+4. **Server-Side Validation:** Enforce quiz restrictions on the server, including availability dates, access codes, and attempt limits. These restrictions must remain effective even when requests are sent directly to the API rather than through the application interface.
 
-Every account has one role. Faculty own the courses they create and can create, edit, publish,
-preview and delete quizzes in them, and see every setting of a quiz on its Details screen. Students take published quizzes in their courses. Teaching
-assistants and administrators use the quiz screens the same way students do. A visitor who is not
-signed in can open the landing page and the sign-in and sign-up screens; courses and quizzes
-require an account, and a new account chooses Faculty or Student when it signs up.
+## 2. Users and Roles
 
-## 3. Architecture
+The application supports different levels of access based on user roles.
 
-The application has three parts. The client is a Next.js application written in TypeScript with
-React, styled with Tailwind CSS, and deployed on Vercel. The server is a Node.js application using
-Express, also written in TypeScript, and deployed on Render. The data lives in MongoDB: a local
-database during development and a MongoDB Atlas database for the deployed site. The server reads
-and writes it through Mongoose models.
+- **Faculty:** Faculty members own the courses they create and can create, edit, publish, preview, and delete quizzes within those courses. They can also access all quiz settings through the Details screen.
+- **Students:** Students can view and take published quizzes within their courses and review their submitted attempts and results.
+- **Teaching Assistants and Administrators:** These roles access the quiz functionality using the same interface and permissions as students.
 
-The client never touches the database. Every screen loads and saves data by calling the server's
-REST API over HTTP with Axios. After signing in, the browser holds a session cookie set by the
-server (through express-session), and each request carries it, so the server always knows which
-user is asking and what role they have. Because the deployed client and server are on different
-sites, the cookie is marked cross-site and secure in production.
+Visitors who are not signed in can access the landing page, sign-in page, and sign-up page. Access to courses and quizzes requires authentication. New users can select either the Faculty or Student role during registration.
 
-Within the client, the quiz screens live under `app/(kambaz)/courses/[cid]/quizzes/`. Each screen
-is a React component that fetches what it needs when it opens. The answers a student is typing
-while taking a quiz are kept in a small Zustand store, so they survive moving between questions
-without being sent anywhere until the student submits. Quiz descriptions and question text are
-rich text, edited with Tiptap and displayed through a read-only Tiptap view rather than by
-inserting raw HTML into the page.
+## 3. Application Architecture
 
-Within the server, each kind of data has its own folder under `Kambaz/` with four files: a Mongoose
-schema, a model, a data access object with the database queries, and the routes. Two small guards
-in `Kambaz/authorize.ts` protect the routes: one requires any signed-in user and one requires
-faculty. All grading happens on the server.
+The application consists of three primary components: the client, the server, and the database.
 
-## 4. Data model
+**Client:** The frontend is built with Next.js, React, and TypeScript, with Tailwind CSS for styling. It is deployed on Vercel.
 
-The quiz feature adds two MongoDB collections, `quizzes` and `attempts`, next to the existing
-`users`, `courses`, `modules`, `assignments` and `enrollments`.
+**Server:** The backend is developed using Node.js, Express, and TypeScript. It handles authentication, authorization, quiz management, attempt validation, and grading. The server is deployed on Render.
 
-A quiz is one document. It belongs to one course through its `course` field, and its questions are
-embedded in it as a list, because questions are always read and saved together with their quiz.
+**Database:** MongoDB stores application data. Local development uses a local MongoDB database, while the deployed application uses MongoDB Atlas. Mongoose models handle database operations.
 
-| Field | Meaning | Default |
-| --- | --- | --- |
-| `title`, `description` | Name and rich-text instructions | "Unnamed Quiz", empty |
-| `course` | Id of the course the quiz belongs to | |
-| `published` | Whether students can see it | No |
-| `quizType` | Graded Quiz, Practice Quiz, Graded Survey or Ungraded Survey | Graded Quiz |
-| `assignmentGroup` | Quizzes, Exams, Assignments or Project | Quizzes |
-| `shuffleAnswers` | Show multiple choice answers in a random order | Yes |
-| `timeLimit` | Minutes allowed (shown, not enforced) | 20 |
-| `multipleAttempts`, `howManyAttempts` | Whether retakes are allowed, and how many attempts in all | No, 1 |
-| `showCorrectAnswers` | Immediately, After due date or Never | Immediately |
-| `accessCode` | Code a student must type before starting | empty |
-| `oneQuestionAtATime` | Show one question per screen | Yes |
-| `webcamRequired`, `lockQuestionsAfterAnswering` | Shown, not enforced | No |
-| `due`, `available`, `until` | Due date, first moment it can be taken, last moment it can be taken | empty |
-| `questions` | The list of questions below | empty |
+### Client-Server Communication
 
-Each embedded question has a `type` (multiple choice, true/false or fill in the blank), a `title`,
-`points`, the rich-text `question`, a list of `choices` (multiple choice only) and a list of
-`answers`. For multiple choice the answers list holds the one correct choice, for true/false it
-holds "True" or "False", and for fill in the blank it holds every accepted answer. A quiz is worth
-the sum of its questions' points.
+The client communicates with the server through REST API endpoints using Axios. It does not access the database directly. After authentication, the server establishes a session using `express-session` and stores the session identifier in a browser cookie. Subsequent requests include this cookie, allowing the server to identify the authenticated user and determine their role.
 
-An attempt is one document per student per try.
+Because the deployed client and server operate on different domains, the session cookie is configured for cross-site requests and marked as secure in production.
 
-| Field | Meaning |
-| --- | --- |
-| `quiz`, `user` | Which quiz and which student |
-| `attempt` | The attempt number, counting from 1 |
-| `score`, `points` | Points earned and points possible |
-| `submitted` | When it was submitted |
-| `questions` | A copy of every question as it was when taken, with the answer given (`given`) and whether it was right (`correct`) |
+### Client Implementation
 
-Dates are stored as text holding a local date and time, such as `2026-11-20T13:00`, which is what a
-date-time field in the browser produces.
+The quiz-related components are located under:
+
+`app/(kambaz)/courses/[cid]/quizzes/`
+
+Each screen is implemented as a React component and retrieves the required data when opened. During a quiz attempt, student answers are maintained in a Zustand store, allowing students to navigate between questions without losing their responses. Answers are submitted to the server only when the student completes the quiz.
+
+Quiz descriptions and question content support rich-text editing through Tiptap. The application uses a read-only Tiptap view to display formatted content rather than inserting raw HTML into the page.
+
+### Server Implementation
+
+The backend organizes each data resource under the `Kambaz/` directory. Each resource contains four primary files:
+
+- **Schema:** Defines the MongoDB document structure.
+- **Model:** Provides the Mongoose model.
+- **DAO:** Handles database queries and data operations.
+- **Routes:** Defines the HTTP endpoints.
+
+Authorization is handled through two middleware functions in `Kambaz/authorize.ts`. One verifies that a user is authenticated, while the other restricts access to faculty-only operations.
+
+All quiz grading and answer validation are performed on the server.
+
+## 4. Data Model
+
+The quiz functionality introduces two MongoDB collections: `quizzes` and `attempts`. These collections extend the existing application data, which includes `users`, `courses`, `modules`, `assignments`, and `enrollments`.
+
+### Quiz Collection
+
+Each quiz is stored as a single document associated with a course through its `course` field. Questions are embedded within the quiz document because they are managed and retrieved together with their parent quiz.
+
+| Field | Description | Default |
+|---|---|---|
+| `title`, `description` | Quiz title and rich-text instructions | "Unnamed Quiz", empty |
+| `course` | ID of the course associated with the quiz | — |
+| `published` | Determines whether the quiz is visible to students | No |
+| `quizType` | Graded Quiz, Practice Quiz, Graded Survey, or Ungraded Survey | Graded Quiz |
+| `assignmentGroup` | Quizzes, Exams, Assignments, or Project | Quizzes |
+| `shuffleAnswers` | Randomizes the order of multiple-choice answers | Yes |
+| `timeLimit` | Time limit in minutes (displayed but not enforced) | 20 |
+| `multipleAttempts`, `howManyAttempts` | Determines whether retakes are allowed and specifies the maximum number of attempts | No, 1 |
+| `showCorrectAnswers` | Controls when correct answers are displayed: Immediately, After due date, or Never | Immediately |
+| `accessCode` | Code required before a student can start the quiz | Empty |
+| `oneQuestionAtATime` | Displays one question per screen | Yes |
+| `webcamRequired`, `lockQuestionsAfterAnswering` | Additional quiz settings (displayed but not enforced) | No |
+| `due`, `available`, `until` | Due date, availability start date, and availability end date | Empty |
+| `questions` | Embedded list of quiz questions | Empty |
+
+Each embedded question contains the following information:
+
+- `type`: Question type (multiple choice, true/false, or fill in the blank).
+- `title`: Question title.
+- `points`: Points assigned to the question.
+- `question`: Rich-text question content.
+- `choices`: Available answer choices for multiple-choice questions.
+- `answers`: Accepted correct answers for grading.
+
+For multiple-choice questions, the answers list contains the correct choice. True/false questions accept either "True" or "False", while fill-in-the-blank questions support multiple accepted answers.
+
+The total quiz score is calculated by adding the points assigned to all questions.
+
+### Attempts Collection
+
+Each quiz attempt is stored as a separate document for a specific student and quiz.
+
+| Field | Description |
+|---|---|
+| `quiz`, `user` | IDs identifying the quiz and the student |
+| `attempt` | Attempt number, starting from 1 |
+| `score`, `points` | Points earned and total possible points |
+| `submitted` | Submission date and time |
+| `questions` | Snapshot of the questions at the time of the attempt, including the submitted answer (`given`) and grading result (`correct`) |
+
+Each attempt stores its own copy of the questions and answers. This preserves historical results even when faculty modify the original quiz.
+
+### Date and Time Storage
+
+Dates are stored as strings containing a local date and time, using the format `YYYY-MM-DDTHH:mm`, such as `2026-11-20T13:00`. This matches the value produced by the browser's date-time input.
 
 ## 5. HTTP API
 
-The quiz routes are listed below. All of them require a signed-in user.
+All quiz API endpoints require an authenticated user. Access to individual operations is controlled by role-based authorization.
 
-| Method and path | Who | What it does |
-| --- | --- | --- |
-| `GET /api/courses/:cid/quizzes` | anyone signed in | Lists the course's quizzes. Faculty get every quiz; everyone else gets published quizzes only, without the answer key and the access code. |
-| `POST /api/courses/:cid/quizzes` | faculty | Creates a quiz with the default name and settings. |
-| `GET /api/quizzes/:qid` | anyone signed in | Reads one quiz, shaped the same way by role; an unpublished quiz is "not found" for students. |
-| `PUT /api/quizzes/:qid` | faculty | Saves settings, questions or the published flag. |
-| `DELETE /api/quizzes/:qid` | faculty | Deletes the quiz and every attempt on it. |
-| `POST /api/quizzes/:qid/access` | anyone signed in | Answers whether the user may start the quiz now, or gives the reason they may not. |
-| `POST /api/quizzes/:qid/attempts` | anyone signed in | Grades the answers. For faculty it returns the result without storing it (the preview); for a student it checks the rules, stores the attempt and returns it. |
-| `GET /api/quizzes/:qid/attempts/last` | anyone signed in | Returns the user's last attempt, or nothing. |
+| Method and Endpoint | Access | Description |
+|---|---|---|
+| `GET /api/courses/:cid/quizzes` | Authenticated users | Retrieves quizzes for a course. Faculty can access all quizzes, while other users receive published quizzes without answer keys or access codes. |
+| `POST /api/courses/:cid/quizzes` | Faculty | Creates a quiz with default settings and a default title. |
+| `GET /api/quizzes/:qid` | Authenticated users | Retrieves a quiz based on the user's role. Unpublished quizzes are returned as not found for students. |
+| `PUT /api/quizzes/:qid` | Faculty | Updates quiz settings, questions, or publication status. |
+| `DELETE /api/quizzes/:qid` | Faculty | Deletes a quiz and all associated attempts. |
+| `POST /api/quizzes/:qid/access` | Authenticated users | Checks whether the user can start the quiz and returns the reason if access is denied. |
+| `POST /api/quizzes/:qid/attempts` | Authenticated users | Grades submitted answers. Faculty receive preview results without storing an attempt, while student submissions are validated, graded, and saved. |
+| `GET /api/quizzes/:qid/attempts/last` | Authenticated users | Retrieves the user's most recent attempt, if one exists. |
 
-Deleting a course also deletes its quizzes and their attempts.
+Deleting a course also removes its associated quizzes and quiz attempts.
 
-## 6. Design decisions
+## 6. Design Decisions and Implementation Details
 
-**The server grades.** Students send only their answers; the server compares them with the answer
-key it keeps and computes the score. Fill in the blank answers are compared ignoring capital
-letters and spaces at either end, and an unanswered question counts as wrong. Grading in the
-browser would have required sending the answer key to the browser, where anyone could read it.
+### Server-Side Grading
 
-**The answer key and the access code never reach a student before submitting.** When the server
-sends a quiz to anyone but faculty, it removes the answers of every question and the access code.
-After a student submits, the attempt they receive includes the correct answers only if Show
-Correct Answers allows it: always for Immediately, never for Never, and for After due date only
-once the due date has passed.
+All quiz grading is performed on the server. Students submit their answers, and the server compares them against the stored answer key to calculate the final score.
 
-**One rule check, used twice.** Whether a student may take a quiz depends on four things, checked
-in this order: the available date, the until date, the number of attempts left, and the access
-code. The server has one function that makes this decision and returns the reason when the answer
-is no. The take screen asks the server through the access route before showing any question, so
-it can explain why a quiz cannot be taken or ask for the access code. Submitting runs the same
-check again, so a student cannot get around the dates or the code by sending a submission
-directly. Faculty are never checked, so they can preview a quiz at any time.
+For fill-in-the-blank questions, answers are compared without considering capitalization or leading and trailing spaces. Unanswered questions are automatically marked incorrect.
 
-**The access code is checked on the server.** Because the browser never has the code, the student
-types it on the take screen and the server compares it exactly, capitals included. The code the
-student typed is then sent along with the submission. A student is asked for it once per visit to
-the take screen; a retake during the same visit does not ask again, and looking at a past attempt
-never asks.
+Performing grading on the server prevents students from accessing the correct answers through browser-side code or network requests.
 
-**Dates follow the server's clock.** Dates are stored without a time zone, so the server reads
-them as its own local time and compares them with its own clock. The deployed server is set to
-the Eastern time zone, which matches the course. Before the available date the list says "Not
-available until" with the date, between the dates it says "Available", and after the until date it
-says "Closed". A quiz with no available date is open at once, and one with no until date never
-closes. A student who already took a quiz can still look at their last attempt after it closes.
+After grading, each question displays a green **Correct** label with a checkmark or a red **Incorrect** label with an X.
 
-**An attempt keeps its own copy of the questions.** Faculty may edit a quiz after students have
-taken it. Each attempt therefore stores the questions as they were, with the answer given, so an
-old result never changes when the quiz is edited; edits apply only to later attempts.
+### Answer Key and Access Code Protection
 
-**Shuffling happens in the browser.** When Shuffle Answers is on, the take screen puts each
-multiple choice question's answers in a new random order every time the quiz is opened. True and
-false always stay in that order. Because answers are graded by their text, the order does not
-matter to the server, and a graded attempt lists the answers in the order the faculty wrote them.
+Correct answers and access codes are never exposed to students before submission.
 
-**One question at a time.** When this setting is on, the take screen shows one question with
-Previous and Next buttons and its position ("Question 2 of 3"), and Submit Quiz appears on the
-last question. The answers live in the Zustand store, so moving between questions keeps them.
-Leaving the screen or reloading the page discards an unfinished attempt; nothing is saved until
-Submit. Submitting with unanswered questions asks for confirmation first.
+When a quiz is retrieved by a non-faculty user, the server removes the correct answers from every question and excludes the access code from the response.
 
-**The preview is the student view.** The faculty preview uses the same quiz form as students,
-including shuffling and one question at a time, and posts to the same grading route. The server
-recognizes faculty and returns the graded result without storing it. The preview always shows the
-correct answers.
+After submission, correct answers are included in the attempt results according to the **Show Correct Answers** setting:
 
-**Settings that are shown but not enforced.** The time limit, webcam requirement and lock questions
-after answering are saved and displayed on the quiz's Details screen, but the take screen does not
-enforce them. In a graded attempt each question carries a green "Correct" label with a checkmark or a
-red "Incorrect" label with an X.
+- **Immediately:** Correct answers are displayed after submission.
+- **After due date:** Correct answers are displayed only after the quiz due date has passed.
+- **Never:** Correct answers are never displayed.
 
-## 7. User guide for faculty
+### Quiz Availability and Attempt Validation
 
-**Finding quizzes.** Sign in, open Dashboard, choose one of your courses, and choose Quizzes in the
-course menu. The list shows each quiz with its availability, due date, points and number of
-questions. The icon near the end of each row shows whether the quiz is published; click it to publish or
-unpublish. The three-dot menu of a row offers Edit, Delete, Publish or Unpublish, and Sort by name,
-due date or available date, which reorders the whole list.
+The server uses a centralized validation function to determine whether a student can start or submit a quiz. It checks the following conditions in order:
 
-**Creating a quiz.** Choose "+ Quiz". A new, unpublished quiz named "Unnamed Quiz" is created and
-its Details screen opens. Choose Edit to open the editor.
+1. **Available Date:** Determines whether the quiz has opened.
+2. **Until Date:** Determines whether the quiz is still within its availability period.
+3. **Attempt Limit:** Checks whether the student has any attempts remaining.
+4. **Access Code:** Verifies the code provided by the student, if required.
 
-**Details tab.** Enter the title and the description, and choose the quiz type and assignment
-group. Under Options choose Shuffle Answers, the time limit, Multiple Attempts and how many
-attempts, One Question at a Time, Webcam Required and Lock Questions After Answering. Choose when
-correct answers are shown, type an access code if students should need one, and set the due date,
-the available date and the until date. Save keeps the changes and returns to the Details screen,
-Save and Publish keeps them, publishes the quiz and returns to the list, and Cancel discards them.
+The quiz-taking screen calls the access endpoint before displaying questions. If access is denied, the application displays the corresponding restriction or requests the required access code.
 
-**Questions tab.** Choose New Question. Give the question a title and points, choose its type, and
-write the question. For multiple choice, write the answers, mark the correct one, and use Add
-Another Answer for more. For true/false, mark True or False. For fill in the blank, write every
-answer you will accept; capital letters and outer spaces do not matter. Save Question adds it to
-the list, where Edit and Delete change it later. The quiz's points are the sum of its questions.
-Save the quiz when you are done.
+The server repeats the same validation when a student submits the quiz. This prevents students from bypassing availability restrictions, attempt limits, or access codes by sending requests directly to the API.
 
-**Previewing.** On the Details screen choose Preview. Answer the questions and choose Submit Quiz
-to see the score, which questions were wrong, and the correct answers. Nothing is stored. Edit
-Quiz goes straight to the Questions tab.
+Faculty members are exempt from these restrictions so they can preview quizzes at any time.
 
-## 8. User guide for students
+### Access Code Validation
 
-**Finding quizzes.** Sign in, open Dashboard, choose a course you are enrolled in (or enroll from
-the course list), and choose Quizzes in the course menu. Only published quizzes appear. Each row
-shows whether the quiz is available, its due date, points and number of questions, and your last
-score once you have taken it.
+Access codes are validated on the server and are never included in student quiz responses.
 
-**Starting.** Choose a quiz to open its Details screen. It shows the due date, points, number of
-questions, when the quiz is available and the time limit, followed by the instructions. Choose
-Start. If the quiz is not
-available yet or is closed, the screen says so instead of offering Start. If the quiz has an
-access code, type the code your instructor gave you and choose Start Quiz; a wrong code is refused
-and the questions stay hidden.
+Students enter the access code on the quiz-taking screen, and the server compares it exactly, including capitalization. The submitted code is included with the attempt request for server-side validation.
 
-**Taking the quiz.** Answer each question. If the quiz shows one question at a time, use Next and
-Previous to move; your answers are kept. Choose Submit Quiz when you are done. If some questions
-are unanswered you are asked to confirm, and unanswered questions count as wrong. Do not leave or
-reload the page before submitting, or your answers are lost.
+Students only need to enter the code once during a visit to the quiz-taking screen. Retaking the quiz during the same visit does not require entering the code again, and viewing a previous attempt does not require a code.
 
-**Results.** After submitting you see your score, when you submitted, and each question with your
-answer. Each question is marked with a green "Correct" or a red "Incorrect", and the correct
-answers appear if the quiz shows them. If more attempts are allowed and the quiz is still open, "Take the Quiz Again" at the top of
-the result starts a new attempt and shows how many are left. Later, the quiz's Details screen
-offers View Last Attempt, which shows your most recent attempt even after the quiz has closed, and,
-while attempts remain and the quiz is open, Take the Quiz Again next to it. Your score also appears on
-the quiz list.
+### Date and Time Handling
 
-## 9. Limitations and future work
+Quiz availability is determined using the server's clock. Dates are stored without an explicit time zone, so the server interprets them using its local time zone when comparing them against the current time.
 
-The quiz routes check a user's role but not whether the user belongs to the course. Answers in
-progress are not saved, so an accidental reload loses them. The time limit, webcam requirement
-and question locking are recorded but not enforced, and dates rely on the server's time zone
-setting rather than storing a time zone with each date. Natural next steps are enforcing the time
-limit with a countdown, saving answers in progress, checking course membership on every quiz
-route, and giving faculty a view of every student's attempts and scores.
+The deployed server uses the Eastern time zone to align with the course.
+
+The quiz list displays availability based on the configured dates:
+
+- **Not available until:** The current time is before the available date.
+- **Available:** The quiz is within its availability period.
+- **Closed:** The current time is after the until date.
+
+If no available date is configured, the quiz is immediately available. If no until date is configured, the quiz does not automatically close.
+
+Students can still access their most recent attempt after a quiz closes.
+
+### Preserving Historical Attempts
+
+Each submitted attempt stores a snapshot of the quiz questions, including the student's answers and grading results.
+
+Faculty can modify a quiz after students have completed it. These changes affect future attempts but do not modify previously submitted results.
+
+This approach preserves the original questions and answers associated with each attempt.
+
+### Shuffling Answers
+
+When **Shuffle Answers** is enabled, multiple-choice answer choices are displayed in a randomized order each time the quiz is opened.
+
+True/false answer choices always remain in their original order.
+
+The server grades answers based on their text rather than their displayed position. As a result, answer shuffling does not affect grading. Submitted attempt results display answer choices in the order originally configured by faculty.
+
+### One Question at a Time
+
+When **One Question at a Time** is enabled, the quiz displays a single question per screen.
+
+Students can navigate using the **Previous** and **Next** buttons, while the interface displays their current position (e.g., Question 2 of 3). The **Submit Quiz** button appears on the final question.
+
+Student answers are maintained in the Zustand store, allowing them to navigate between questions without losing their responses.
+
+Unfinished attempts are not persisted. Leaving the quiz screen or reloading the page discards the current answers because nothing is saved until submission. If unanswered questions remain, the application asks students to confirm before submitting.
+
+### Faculty Quiz Preview
+
+The faculty preview uses the same quiz form as the student interface, including answer shuffling and one-question-at-a-time navigation.
+
+Preview submissions use the same server-side grading endpoint as student submissions. However, the server identifies faculty users and returns the graded results without creating or storing an attempt.
+
+Faculty can review the score, incorrect answers, and correct answers immediately.
+
+### Settings Displayed but Not Enforced
+
+Some quiz settings are saved and displayed on the Details screen but are not currently enforced during quiz-taking.
+
+These include:
+
+- **Time Limit:** Displays the configured time limit but does not enforce a countdown or automatically submit the quiz.
+- **Webcam Required:** Stores and displays the webcam requirement but does not activate webcam monitoring.
+- **Lock Questions After Answering:** Stores and displays the setting but does not prevent students from revisiting answered questions.
+
+## 7. User Guide for Faculty
+
+### Finding Quizzes
+
+1. Sign in using a faculty account.
+2. Open **Dashboard**.
+3. Select one of the courses you teach.
+4. Open **Quizzes** from the course menu.
+
+The quiz list displays each quiz's availability, due date, total points, and number of questions.
+
+The publication icon near the end of each row indicates whether a quiz is published. Selecting the icon allows faculty to publish or unpublish the quiz.
+
+The three-dot menu provides additional actions:
+
+- **Edit:** Opens the quiz editor.
+- **Delete:** Removes the quiz and its associated attempts.
+- **Publish / Unpublish:** Changes the quiz's publication status.
+- **Sort:** Reorders the quiz list by name, due date, or availability date.
+
+### Creating a Quiz
+
+Select **+ Quiz** to create a new quiz.
+
+The application creates an unpublished quiz with the default title "Unnamed Quiz" and opens its Details screen.
+
+Select **Edit** to access the quiz editor.
+
+### Configuring Quiz Details
+
+The Details tab allows faculty to configure the quiz's information and settings.
+
+**Basic Information:**
+
+- Enter the quiz title and description.
+- Select the quiz type.
+- Choose the assignment group.
+
+**Quiz Options:**
+
+- Enable or disable Shuffle Answers.
+- Configure the time limit.
+- Enable Multiple Attempts and specify the maximum number of attempts.
+- Enable One Question at a Time.
+- Configure Webcam Required.
+- Configure Lock Questions After Answering.
+- Choose when correct answers should be displayed.
+- Set an access code if required.
+- Configure the due date, available date, and until date.
+
+**Saving Options:**
+
+- **Save:** Saves the changes and returns to the Details screen.
+- **Save and Publish:** Saves the changes, publishes the quiz, and returns to the quiz list.
+- **Cancel:** Discards unsaved changes.
+
+### Creating and Managing Questions
+
+Open the **Questions** tab and select **New Question**.
+
+For each question:
+
+1. Enter a question title.
+2. Specify the points assigned to the question.
+3. Select the question type.
+4. Enter the question content.
+
+The question editor supports three types:
+
+**Multiple Choice:**
+- Enter the available answer choices.
+- Mark the correct answer.
+- Select **Add Another Answer** to add additional choices.
+
+**True/False:**
+- Enter the question.
+- Select either True or False as the correct answer.
+
+**Fill in the Blank:**
+- Enter the question.
+- Provide all accepted answers.
+- Capitalization and leading or trailing spaces are ignored during grading.
+
+Select **Save Question** to add the question to the quiz. Existing questions can be modified using **Edit** or removed using **Delete**.
+
+The total quiz points are calculated automatically based on the points assigned to its questions.
+
+Save the quiz after completing the configuration.
+
+### Previewing a Quiz
+
+From the Details screen, select **Preview** to view the quiz from the student's perspective.
+
+Faculty can answer the questions and select **Submit Quiz** to review the graded results, including the score, incorrect answers, and correct answers.
+
+Preview submissions are not stored as student attempts.
+
+Select **Edit Quiz** to return directly to the Questions tab.
+
+## 8. User Guide for Students
+
+### Finding Quizzes
+
+1. Sign in using a student account.
+2. Open **Dashboard**.
+3. Select a course in which you are enrolled. You can also enroll in a course from the course list.
+4. Open **Quizzes** from the course menu.
+
+Only published quizzes are displayed.
+
+Each quiz entry includes its availability, due date, total points, number of questions, and your most recent score, if you have already completed an attempt.
+
+### Starting a Quiz
+
+Select a published quiz to open its Details screen.
+
+The Details screen displays:
+
+- Due date
+- Total points
+- Number of questions
+- Availability dates
+- Time limit
+- Quiz instructions
+
+Select **Start** to begin the quiz.
+
+If the quiz is not yet available or has already closed, the application displays the corresponding restriction instead of allowing the student to start.
+
+If an access code is required, enter the code provided by your instructor and select **Start Quiz**. An incorrect code is rejected, and the quiz questions remain hidden.
+
+### Taking a Quiz
+
+Answer each question displayed on the quiz screen.
+
+If the quiz is configured for one question at a time, use **Next** and **Previous** to navigate between questions. Previously entered answers are retained while navigating.
+
+Select **Submit Quiz** when you have completed the assessment.
+
+If any questions remain unanswered, the application requests confirmation before submitting. Unanswered questions are graded as incorrect.
+
+**Important:** Unfinished answers are not saved to the server. Leaving the quiz screen or refreshing the page before submission will discard your responses.
+
+### Viewing Quiz Results
+
+After submission, the application displays:
+
+- Your final score.
+- Submission date and time.
+- Each question and your submitted answer.
+- Correct or incorrect status for each question.
+- Correct answers, depending on the instructor's quiz settings.
+
+Correct answers are displayed according to the **Show Correct Answers** setting.
+
+If multiple attempts are enabled and the quiz remains available, the **Take the Quiz Again** option allows you to start another attempt. The interface also displays the number of remaining attempts.
+
+### Reviewing Previous Attempts
+
+Students can return to the quiz Details screen and select **View Last Attempt** to review their most recent submission, even after the quiz has closed.
+
+If attempts remain and the quiz is still available, the **Take the Quiz Again** option is also displayed.
+
+The most recent score is additionally available in the course quiz list.
+
+## 9. Limitations and Future Improvements
+
+The current implementation provides the core quiz creation, management, assessment, and grading workflows. However, several features remain limited:
+
+- **Course Membership Validation:** Quiz routes validate authentication and roles but do not verify that a student is enrolled in the course or that a faculty member created it.
+- **Unfinished Attempt Persistence:** Answers are stored locally during quiz-taking. Reloading or leaving the page discards unfinished attempts.
+- **Time Limit Enforcement:** The configured time limit is displayed but does not enforce a countdown or automatic submission.
+- **Webcam Monitoring:** The webcam requirement is stored and displayed but is not enforced.
+- **Question Locking:** The lock questions after answering setting is stored but does not prevent students from revisiting previously answered questions.
+- **Time Zone Handling:** Dates are stored without explicit time zone information and rely on the server's configured time zone.
+
+Potential future improvements include:
+
+1. Implementing countdown timers and automatic submission when the time limit expires.
+2. Persisting unfinished quiz attempts so students can recover their answers after refreshing or leaving the page.
+3. Adding course enrollment validation to all quiz-related API routes.
+4. Implementing webcam monitoring and question-locking functionality.
+5. Providing faculty with an interface to review individual student attempts, scores, and overall quiz performance.
